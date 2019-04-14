@@ -1,0 +1,6 @@
+_site
+.sass-cache
+.jekyll-metadata
+.doit.db
+_cache/
+_build/
