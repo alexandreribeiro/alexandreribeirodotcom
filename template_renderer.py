@@ -17,7 +17,7 @@ print(f"Copying assets to {root_build_folder}")
 shutil.copytree(assets_folder, os.path.join(root_build_folder, os.path.basename(assets_folder)))
 
 jinja_environment = Environment(loader=FileSystemLoader('templates'))
-jinja_environment.globals['ROOT_URL'] = 'https://alexandreribeiro.com'
+jinja_environment.globals['ROOT_URL'] = ''
 
 pages = [
     {
