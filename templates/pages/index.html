@@ -1,0 +1,85 @@
+{% import 'cards.html' as cards %}
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-6 order-md-2 text-center">
+        <img alt="Alexandre Ribeiro" class="round-picture" src="{{ ROOT_URL }}/assets/images/index-hero-photo.jpg">
+    </div>
+    <div class="col-md-6 order-md-1">
+        <h1 class="hero-text amatic-sc-bold">Hi, I'm <span class="accent-primary-color">Alexandre</span></h1>
+        <p>I am a software developer from Rio de Janeiro &#x1F1E7;&#x1F1F7;,
+            living in Stockholm &#x1f1f8;&#x1f1ea;.</p>
+        <p>My pastimes include photography, astronomy, learning about history,
+            flight simulation and being outdoors as much as possible in the summer.
+            I am a football lover and proud supporter of CR Vasco da Gama <span class="accent-red">&#10016;</span>.
+        </p>
+    </div>
+</div>
+<div class="row mt-5">
+    <div class="col-md-4">
+        <h2>Professional</h2>
+    </div>
+</div>
+{{
+cards.full_line_link_card(page_link="https://www.linkedin.com/in/alexandre-de-oliveira-ribeiro/",
+title="LinkedIn",
+description="Visit my LinkedIn profile for the latest updates on my professional experience and to connect with me.",
+icon="fa-brands fa-linkedin")
+}}
+
+{{
+cards.full_line_link_card(page_link=ROOT_URL ~ "/assets/pdf/alexandre-de-oliveira-ribeiro-software-developer-cv.pdf",
+title="Download my CV",
+description="Click here to download a copy of my CV.",
+icon="fa-solid fa-download")
+}}
+
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h2>Projects</h2>
+    </div>
+</div>
+{{
+cards.full_line_link_card(page_link="https://github.com/alexandreribeiro/astronomy.js",
+title="astronomy.js",
+description="Check astronomy.js on GitHub. It provides tools for astronomical calculations in JavaScript.",
+icon="fa-brands fa-github")
+}}
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h2>Personal</h2>
+    </div>
+</div>
+{{
+cards.full_line_link_card(page_link=ROOT_URL ~ "/world-map/",
+title="World Check-Ins",
+description="My collection of Foursquare/Swarm check-ins.",
+icon="fa-solid fa-earth-americas")
+}}
+{{
+cards.full_line_link_card(page_link=ROOT_URL ~ "/weather-dashboard/",
+title="Weather Dashboard",
+description="Weather and astronomy dashboard for my location in Stockholm.",
+icon="fa-solid fa-smog")
+}}
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h2>Alexandre Ribeiro TV</h2>
+        <p>Watch my adventures on YouTube!</p>
+        <p><em>The videos are in Portuguese. Clicking opens the video in a new tab.</em></p>
+
+        <div class="text-center">
+            <a href="https://www.youtube.com/watch?v=gZw43nOjr-E" target="_blank" class="link-card card">
+                <img alt="Alexandre Ribeiro TV - Winter in Karlskrona - Video opens in a new tab"
+                     src="https://img.youtube.com/vi/gZw43nOjr-E/maxresdefault.jpg"
+                     class="image-with-shadow">
+                <div class="play-button">
+                    <svg class="play-icon" viewBox="0 0 24 24">
+                        <polygon points="6,4 20,12 6,20"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

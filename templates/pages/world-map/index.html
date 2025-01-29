@@ -1,0 +1,95 @@
+{% import 'cards.html' as cards %}
+{% extends "base.html" %}
+
+{% block extra_headers %}
+<link crossorigin="" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      rel="stylesheet"/>
+<link href="{{ ROOT_URL }}/assets/css/leaflet-marker-cluster.css" rel="stylesheet"/>
+<link href="{{ ROOT_URL }}/assets/css/leaflet-marker-cluster-default.css" rel="stylesheet"/>
+<script crossorigin=""
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/leaflet-markercluster.js"></script>
+<style>
+    #map {
+        height: 800px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_javascript %}
+<script>
+    const map = L.map('map').setView([0, 0], 2);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+    fetch('{{ ROOT_URL }}/assets/data/foursquare-check-ins.json')  // URL to the JSON file
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const markers = L.markerClusterGroup({
+                'maxClusterRadius': 30,
+                'singleMarkerMode': true,
+                'disableClusteringAtZoom': 12
+            });
+            data.forEach(function ([longitude, latitude, comment]) {
+                const marker = L.marker([latitude, longitude]).bindPopup(comment);
+                markers.addLayer(marker);
+            });
+            map.addLayer(markers);
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row my-5">
+    <div class="col-md-12">
+        <h1>Foursquare / Swarm Check-ins</h1>
+    </div>
+</div>
+
+<div class="row my-5">
+    <div class="col-md-12">
+        <div id="map"></div>
+    </div>
+</div>
+
+<div class="row my-5">
+    <div class="col-md-12">
+        <p>These are the places I checked in using the Foursquare / Swarm App since the app was installed in my first
+            smartphone in 2010.
+            <br> A few entries were entered by hand. Manually logging the places I visit is one of the
+            ways I like when keeping memories.
+            <br>Swarm has a vibrant community still to this day!
+        </p>
+    </div>
+</div>
+
+<div class="row my-5">
+    <div class="col-md-12">
+        <h2>About</h2>
+        <p>The map was generated using the
+            <a href="https://www.openstreetmap.org/">openstreetmap.org</a> data and tiles,
+            <a href="https://leafletjs.com/">leafletjs</a> with the
+            <a href="https://github.com/Leaflet/Leaflet.markercluster">leaflet-markercluster</a> plugin.
+        </p>
+
+        {{
+        cards.full_line_link_card(page_link="https://www.openstreetmap.org/fixthemap",
+        title="Problem with the map?",
+        description="If you believe there is a problem with the map, please click this link so you can
+        report the issue. This link leads to the openstreetmap.org website.",
+        icon="fa-solid fa-arrow-up-right-from-square")
+        }}
+    </div>
+</div>
+{% endblock %}
