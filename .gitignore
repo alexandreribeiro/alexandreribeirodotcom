@@ -4,3 +4,4 @@ _site
 .doit.db
 _cache/
 _build/
+.idea/
