@@ -3,19 +3,12 @@
     --red-accent: #f44336;
 }
 
-.navbar {
-    --bs-navbar-brand-font-size: 2rem !important;
-}
-
-body {
-    font-family: "Markazi Text", serif;
-}
-
-.round-picture {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    object-fit: cover;
+.container {
+    max-width: 960px !important;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .hero-text {
@@ -95,12 +88,6 @@ body {
     margin-bottom: 0;
 }
 
-.image-with-shadow {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
-    width: 100%;
-    height: auto;
-}
-
 .play-button {
     position: absolute;
     top: 50%;
@@ -125,32 +112,6 @@ body {
     margin-top: -100%;
 }
 
-.navbar-custom {
-    background-color: #10ac84;
-}
-
-.navbar-custom .navbar-brand,
-.navbar-custom .nav-link {
-    color: white !important; /* White text */
-}
-
-.navbar-custom .nav-link:hover {
-    opacity: 0.8; /* Slight transparency on hover */
-}
-
-.navbar-custom .navbar-brand:hover {
-    opacity: 0.8;
-}
-
-.navbar-custom .nav-link {
-    font-size: 1rem !important;
-}
-
-footer {
-    background-color: #e9ecef;
-    color: #333;
-}
-
-.container-fluid.no-padding {
-    padding: 0;
+.text-center {
+    text-align: center;
 }

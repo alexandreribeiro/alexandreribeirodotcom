@@ -51,45 +51,34 @@
 {% endblock %}
 
 {% block content %}
-<div class="row my-5">
-    <div class="col-md-12">
-        <h1>Foursquare / Swarm Check-ins</h1>
-    </div>
-</div>
+    <h1>Foursquare / Swarm Check-ins</h1>
 
-<div class="row my-5">
-    <div class="col-md-12">
-        <div id="map"></div>
-    </div>
-</div>
+    <section>
+    <div id="map"></div>
+    </section>
+    <p>These are the places I checked in using the Foursquare / Swarm App since the app was installed in my first
+        smartphone in 2010.
+        <br> A few entries were entered by hand. Manually logging the places I visit is one of the
+        ways I like when keeping memories.
+        <br>Swarm has a vibrant community still to this day!
+    </p>
 
-<div class="row my-5">
-    <div class="col-md-12">
-        <p>These are the places I checked in using the Foursquare / Swarm App since the app was installed in my first
-            smartphone in 2010.
-            <br> A few entries were entered by hand. Manually logging the places I visit is one of the
-            ways I like when keeping memories.
-            <br>Swarm has a vibrant community still to this day!
-        </p>
-    </div>
-</div>
+<section>
+<article>
+    <header>About</header>
+    <p>The map was generated using the
+        <a href="https://www.openstreetmap.org/">openstreetmap.org</a> data and tiles,
+        <a href="https://leafletjs.com/">leafletjs</a> with the
+        <a href="https://github.com/Leaflet/Leaflet.markercluster">leaflet-markercluster</a> plugin.
+    </p>
 
-<div class="row my-5">
-    <div class="col-md-12">
-        <h2>About</h2>
-        <p>The map was generated using the
-            <a href="https://www.openstreetmap.org/">openstreetmap.org</a> data and tiles,
-            <a href="https://leafletjs.com/">leafletjs</a> with the
-            <a href="https://github.com/Leaflet/Leaflet.markercluster">leaflet-markercluster</a> plugin.
-        </p>
-
-        {{
-        cards.full_line_link_card(page_link="https://www.openstreetmap.org/fixthemap",
-        title="Problem with the map?",
-        description="If you believe there is a problem with the map, please click this link so you can
-        report the issue. This link leads to the openstreetmap.org website.",
-        icon="fa-solid fa-arrow-up-right-from-square")
-        }}
-    </div>
-</div>
+    {{
+    cards.full_line_link_card(page_link="https://www.openstreetmap.org/fixthemap",
+    title="Problem with the map?",
+    description="If you believe there is a problem with the map, please click this link so you can
+    report the issue. This link leads to the openstreetmap.org website.",
+    icon="fa-solid fa-arrow-up-right-from-square")
+    }}
+</article>
+</section>
 {% endblock %}
