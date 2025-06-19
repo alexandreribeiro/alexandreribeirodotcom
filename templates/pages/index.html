@@ -3,14 +3,21 @@
 {% block content %}
 <section>
     <div class="grid">
-        <div>
-            <p class="hero-text amatic-sc-bold">Hi, I'm <span class="accent-primary-color">Alexandre</span></p>
+        <div class="text-justify">
+            <h1 class="hero-text amatic-sc-bold">Hi, I'm <span class="accent-primary-color">Alexandre</span></h1>
             <p>I am a software developer from Rio de Janeiro &#x1F1E7;&#x1F1F7;,
                 living in Stockholm &#x1f1f8;&#x1f1ea;.</p>
             <p>My pastimes include photography, astronomy, learning about history,
                 flight simulation and being outdoors as much as possible in the summer.
                 I am a football lover and proud supporter of CR Vasco da Gama <span class="accent-red">&#10016;</span>.
             </p>
+            <div class="grid">
+                <a role="button" class="contrast" href="https://www.linkedin.com/in/alexandre-de-oliveira-ribeiro/"><i
+                        class="fa-brands fa-linkedin"></i> LinkedIn</a>
+                <a role="button"
+                   href="{{ ROOT_URL }}/assets/pdf/alexandre-de-oliveira-ribeiro-software-developer-cv.pdf"><i
+                        class="fa-solid fa-download"></i> Download CV</a>
+            </div>
         </div>
         <figure>
             <img alt="Alexandre Ribeiro's Portrait"
@@ -20,91 +27,74 @@
 </section>
 
 <section>
-    <article>
-        <header>Professional</header>
-        <div class="grid">
-            <div>
-                {{
-                cards.full_line_link_card(page_link="https://www.linkedin.com/in/alexandre-de-oliveira-ribeiro/",
-                title="LinkedIn",
-                description="Visit my LinkedIn profile for the latest updates on my professional experience and to
-                connect with
-                me.",
-                icon="fa-brands fa-linkedin")
-                }}
-            </div>
-            <div>
-                {{
-                cards.full_line_link_card(page_link=ROOT_URL ~
-                "/assets/pdf/alexandre-de-oliveira-ribeiro-software-developer-cv.pdf",
-                title="Download my CV",
-                description="Click here to download a copy of my CV.",
-                icon="fa-solid fa-download")
-                }}
-            </div>
-        </div>
-    </article>
+    <h2>Projects</h2>
+    <div class="grid">
+        {{
+        cards.link_card(page_link="https://github.com/alexandreribeiro/astronomy-js",
+        title="AstronomyJS",
+        description="A JavaScript library for astronomical calculations.",
+        icon="fa-brands fa-github")
+        }}
+        {{
+        cards.link_card(page_link="https://github.com/alexandreribeiro/astronomy-svg",
+        title="AstronomySVG",
+        description="Create astronomical diagrams using SVG.",
+        icon="fa-brands fa-github")
+        }}
+    </div>
 </section>
 
-<div class="grid">
-    <article>
-        <header>Projects</header>
-        <div>
-            {{
-            cards.full_line_link_card(page_link="https://github.com/alexandreribeiro/astronomy-js",
-            title="AstronomyJS",
-            description="A JavaScript library for astronomical calculations.",
-            icon="fa-brands fa-github")
-            }}
-        </div>
-        <div>
-            {{
-            cards.full_line_link_card(page_link="https://github.com/alexandreribeiro/astronomy-svg",
-            title="AstronomySVG",
-            description="Create astronomical diagrams using SVG.",
-            icon="fa-brands fa-github")
-            }}
-        </div>
-    </article>
+<section>
+    <h2>Personal</h2>
+    <div class="grid">
 
-    <article>
-        <header>Personal</header>
-        <div>
-            {{
-            cards.full_line_link_card(page_link=ROOT_URL ~ "/world-map/",
-            title="World Check-Ins",
-            description="My collection of Foursquare/Swarm check-ins.",
-            icon="fa-solid fa-earth-americas")
-            }}
-        </div>
-        <div>
-            {{
-            cards.full_line_link_card(page_link=ROOT_URL ~ "/weather-dashboard/",
-            title="Weather Dashboard",
-            description="Weather and astronomy dashboard for my location in Stockholm.",
-            icon="fa-solid fa-smog")
-            }}
-        </div>
-    </article>
-</div>
+        <a href="https://www.youtube.com/watch?v=gZw43nOjr-E" target="_blank" class="link-card card">
+            <article>
+                <header>Alexandre Ribeiro TV</header>
+                <figure>
+                    <div>
+                        <img alt="Alexandre Ribeiro TV - Winter in Karlskrona - Video opens in a new tab"
+                             src="https://img.youtube.com/vi/gZw43nOjr-E/maxresdefault.jpg"
+                        >
+                        <div class="play-button">
+                            <svg class="play-icon" viewBox="0 0 24 24">
+                                <polygon points="6,4 20,12 6,20"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <figcaption>
+                        Watch my adventures on YouTube!
+                        <em>The videos are in Portuguese. Clicking opens the video in a new tab.</em>
+                    </figcaption>
+                </figure>
+            </article>
+        </a>
 
-<article>
-    <header>Alexandre Ribeiro TV</header>
-        <figure>
-            <a href="https://www.youtube.com/watch?v=gZw43nOjr-E" target="_blank" class="link-card card">
-                <img alt="Alexandre Ribeiro TV - Winter in Karlskrona - Video opens in a new tab"
-                     src="https://img.youtube.com/vi/gZw43nOjr-E/maxresdefault.jpg"
-                >
-                <div class="play-button">
-                    <svg class="play-icon" viewBox="0 0 24 24">
-                        <polygon points="6,4 20,12 6,20"/>
-                    </svg>
-                </div>
-            </a>
-            <figcaption>
-                <p>Watch my adventures on YouTube!</p>
-                <p><em>The videos are in Portuguese. Clicking opens the video in a new tab.</em></p>
-            </figcaption>
-        </figure>
-</article>
+        <a href="{{ ROOT_URL }}/world-map/" class="link-card card">
+            <article>
+                <header>World Check-Ins</header>
+                <figure>
+                    <div>
+                        <img alt="World map containing check-ins from Foursquare and Swarm"
+                             src="{{ ROOT_URL }}/assets/images/world-checkins-photo.png"
+                        >
+                    </div>
+                    <figcaption>
+                        My collection of Foursquare/Swarm check-ins.
+                    </figcaption>
+                </figure>
+            </article>
+        </a>
+
+        {{
+        cards.link_card(page_link=ROOT_URL ~ "/weather-dashboard/",
+        title="Weather Dashboard",
+        description="Weather and astronomy dashboard for my location in Stockholm.",
+        icon="fa-solid fa-smog")
+        }}
+
+
+    </div>
+</section>
+
 {% endblock %}

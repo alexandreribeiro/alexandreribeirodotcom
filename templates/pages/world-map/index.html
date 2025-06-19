@@ -13,7 +13,18 @@
 <script src="{{ ROOT_URL }}/assets/js/leaflet-markercluster.js"></script>
 <style>
     #map {
-        height: 800px;
+        height: 600px;
+    }
+
+    .leaflet-container * {
+        font-family: sans-serif;
+        font-size: inherit;
+        background: none;
+        border: none;
+        box-shadow: none;
+        margin: 0;
+        padding: 0;
+        color: #0f1114;
     }
 </style>
 {% endblock %}
@@ -51,34 +62,38 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Foursquare / Swarm Check-ins</h1>
+<article>
+    <header>Foursquare / Swarm Check-ins</header>
 
     <section>
-    <div id="map"></div>
+        <div id="map"></div>
     </section>
-    <p>These are the places I checked in using the Foursquare / Swarm App since the app was installed in my first
-        smartphone in 2010.
-        <br> A few entries were entered by hand. Manually logging the places I visit is one of the
-        ways I like when keeping memories.
-        <br>Swarm has a vibrant community still to this day!
-    </p>
-
-<section>
-<article>
-    <header>About</header>
-    <p>The map was generated using the
-        <a href="https://www.openstreetmap.org/">openstreetmap.org</a> data and tiles,
-        <a href="https://leafletjs.com/">leafletjs</a> with the
-        <a href="https://github.com/Leaflet/Leaflet.markercluster">leaflet-markercluster</a> plugin.
-    </p>
-
-    {{
-    cards.full_line_link_card(page_link="https://www.openstreetmap.org/fixthemap",
-    title="Problem with the map?",
-    description="If you believe there is a problem with the map, please click this link so you can
-    report the issue. This link leads to the openstreetmap.org website.",
-    icon="fa-solid fa-arrow-up-right-from-square")
-    }}
+    <section>
+        <p>These are the places I checked in using the Foursquare / Swarm App since the app was installed in my first
+            smartphone in 2010.
+            <br> A few entries were entered by hand. Manually logging the places I visit is one of the
+            ways I like when keeping memories.
+            <br>Swarm has a vibrant community still to this day!
+        </p>
+    </section>
 </article>
+<section>
+    <div class="grid">
+        <article>
+            <header>About</header>
+            <p>This map was generated using the
+                <a href="https://www.openstreetmap.org/">openstreetmap.org</a> data and tiles,
+                <a href="https://leafletjs.com/">leafletjs</a> with the
+                <a href="https://github.com/Leaflet/Leaflet.markercluster">leaflet-markercluster</a> plugin.
+            </p>
+        </article>
+        <article>
+            <header>Problem with the map?</header>
+            If you believe there is a problem with the map, please report the issue in the
+            <a href="https://www.openstreetmap.org/fixthemap">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> openstreetmap.org</a> website.
+        </article>
+    </div>
 </section>
+
 {% endblock %}

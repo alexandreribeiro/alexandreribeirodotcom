@@ -1,36 +1,23 @@
-{% macro link_card(page_link, icon, title, description, card_class="col-md-12 mb-3") %}
-<div class="{{ card_class }}">
-    <a href="{{ page_link }}" class="link-card card p-1 shadow-sm">
-        <div class="card-body">
-            <div class="icon text-primary text-dark">
-                <i class="{{ icon }}"></i>
-            </div>
-            <div>
-                <h5 class="card-title">{{ title }}</h5>
-                <p class="card-text">{{ description }}</p>
-            </div>
+{% macro link_card(page_link, icon, title, description) %}
+<a href="{{ page_link }}" class="link-card card">
+    <article>
+        <header>{{ title }}</header>
+        <div>
+            <p class="card-text">{{ description }}</p>
         </div>
-    </a>
-</div>
+    </article>
+</a>
 {% endmacro %}
 
 {% macro mini_link_card(page_link, icon, title, card_class="col-md-3 mb-3") %}
 <div class="{{ card_class }}">
-    <a href="{{ page_link }}" class="link-card mini-link-card card p-1 shadow-sm">
+    <a href="{{ page_link }}" class="link-card mini-link-card card">
         <div class="card-body">
             <div class="icon text-primary text-dark">
                 <i class="{{ icon }}"></i>
             </div>
-            <div>
-                <p class="card-title">{{ title }}</p>
-            </div>
+            <p class="card-title">{{ title }}</p>
         </div>
     </a>
-</div>
-{% endmacro %}
-
-{% macro full_line_link_card(page_link, icon, title, description) %}
-<div class="row mt-3">
-{{ link_card(page_link, icon, title, description) }}
 </div>
 {% endmacro %}

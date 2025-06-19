@@ -48,12 +48,16 @@
     position: relative;
     text-decoration: none;
     color: inherit;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.link-card article p {
+    margin-bottom: 0;
 }
 
 .link-card:hover {
-    background-color: #f8f9fa; /* Light gray */
-    transform: scale(1.01);
+    transform: scale(1.02);
+    filter: brightness(120%);
     color: inherit;
 }
 
@@ -62,16 +66,11 @@
     align-items: center;
 }
 
-.link-card .icon {
+.link-card article .icon {
     width: 4rem;
     height: 4rem;
     margin-right: 1rem;
     font-size: 3rem;
-}
-
-.link-card .card-title {
-    font-weight: bold;
-    margin-bottom: 0.25rem;
 }
 
 .link-card.mini-link-card .icon {
@@ -114,4 +113,20 @@
 
 .text-center {
     text-align: center;
+}
+
+.text-justify {
+    text-align: justify;
+}
+
+.no-list-style {
+    list-style: none !important;
+    padding-left: 0;
+    margin: 0;
+}
+
+.no-list-style li {
+    list-style: none !important;
+    padding-left: 0;
+    margin: 0;
 }

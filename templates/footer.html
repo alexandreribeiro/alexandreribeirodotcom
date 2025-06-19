@@ -1,59 +1,44 @@
 {% import 'cards.html' as cards %}
+<hr>
 <section>
     <div class="grid">
-
         <div>
             <h3>Wanna get in touch?</h3>
             <p>I am always available for exciting discussions!</p>
         </div>
-        <div>
-            {{ cards.mini_link_card(page_link="https://www.youtube.com/@alexandreribeirotv",
-            title="@alexandreribeirotv",
-            icon="fa-brands fa-youtube",
-            card_class="col-md-4") }}
-
-            {{ cards.mini_link_card(page_link="https://github.com/alexandreribeiro",
-            title="/alexandreribeiro",
-            icon="fa-brands fa-github",
-            card_class="col-md-4") }}
-
-            {{ cards.mini_link_card(page_link="https://linkedin.com/in/alexandre-de-oliveira-ribeiro",
-            title="linkedin",
-            icon="fa-brands fa-linkedin",
-            card_class="col-md-4") }}
-        </div>
+        <div></div>
     </div>
 </section>
 
 <section>
-    <div class="grid">
+    <div class="grid outline">
         <div>
-            <h5>Professional</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2"><a class="nav-link p-0 text-body-secondary" href="#">LinkedIn
-                    Profile</a></li>
-                <li class="nav-item mb-2"><a
-                        class="nav-link p-0 text-body-secondary"
-                        href="{{ ROOT_URL }}/assets/pdf/alexandre-de-oliveira-ribeiro-software-developer-cv.pdf">Download
-                    My CV</a></li>
-            </ul>
-        </div>
-        <div>
-            <h5>Projects</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2"><a class="nav-link p-0 text-body-secondary" href="#">astronomy.js</a>
+            <h5>Contact</h5>
+            <ul class="no-list-style">
+                <li><i class="fa-brands fa-youtube"></i>
+                    <a class="contrast" href="https://www.youtube.com/@alexandreribeirotv">@alexandreribeirotv</a></li>
+                <li><i class="fa-brands fa-github"></i>
+                    <a class="contrast" href="https://github.com/alexandreribeiro">/alexandreribeiro</a></li>
+                <li><i class="fa-brands fa-linkedin"></i>
+                    <a class="contrast" href="https://www.linkedin.com/in/alexandre-de-oliveira-ribeiro/">LinkedIn</a>
                 </li>
             </ul>
         </div>
         <div>
+            <h5>Projects</h5>
+            <ul class="no-list-style">
+                <li><i class="fa-brands fa-github"></i>
+                    <a class="contrast" href="https://github.com/alexandreribeiro/astronomy-js">astronomy-js</a></li>
+                <li><i class="fa-brands fa-github"></i>
+                    <a class="contrast" href="https://github.com/alexandreribeiro/astronomy-svg">astronomy-svg</a></li>
+            </ul>
+        </div>
+        <div>
             <h5>Personal</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2"><a class="nav-link p-0 text-body-secondary"
-                                             href="{{ ROOT_URL }}/world-map/">World Map</a></li>
-                <li class="nav-item mb-2"><a class="nav-link p-0 text-body-secondary"
-                                             href="{{ ROOT_URL }}/weather-dashboard/">Weather Dashboard</a></li>
-                <li class="nav-item mb-2"><a class="nav-link p-0 text-body-secondary"
-                                             href="{{ ROOT_URL }}/about/">About me</a></li>
+            <ul class="no-list-style">
+                <li><a class="contrast" href="{{ ROOT_URL }}/world-map/">World Map</a></li>
+                <li><a class="contrast" href="{{ ROOT_URL }}/weather-dashboard/">Weather Dashboard</a></li>
+                <li><a class="contrast" href="{{ ROOT_URL }}/about/">About me</a></li>
             </ul>
         </div>
     </div>

@@ -8,3 +8,9 @@ To generate the templates:
 pip install -r requirements.txt
 python template_renderer.py
 ```
+
+To serve the templates locally:
+
+```bash
+python3 -m http.server 8000 --directory _build/
+```
