@@ -12,9 +12,9 @@
                 I am a football lover and proud supporter of CR Vasco da Gama <span class="accent-red">&#10016;</span>.
             </p>
             <div class="grid">
-                <a role="button" class="contrast" href="https://www.linkedin.com/in/alexandre-de-oliveira-ribeiro/"><i
+                <a role="button" class="contrast no-break" href="https://www.linkedin.com/in/alexandre-de-oliveira-ribeiro/"><i
                         class="fa-brands fa-linkedin"></i> LinkedIn</a>
-                <a role="button"
+                <a role="button" class="no-break"
                    href="{{ ROOT_URL }}/assets/pdf/alexandre-de-oliveira-ribeiro-software-developer-cv.pdf"><i
                         class="fa-solid fa-download"></i> Download CV</a>
             </div>
@@ -76,8 +76,7 @@
                 <figure>
                     <div>
                         <img alt="World map containing check-ins from Foursquare and Swarm"
-                             src="{{ ROOT_URL }}/assets/images/world-checkins-photo.png"
-                        >
+                             src="{{ ROOT_URL }}/assets/images/world-checkins-photo.png">
                     </div>
                     <figcaption>
                         My collection of Foursquare/Swarm check-ins.
@@ -87,12 +86,11 @@
         </a>
 
         {{
-        cards.link_card(page_link=ROOT_URL ~ "/weather-dashboard/",
-        title="Weather Dashboard",
+        cards.link_card(page_link=ROOT_URL ~ "/dashboard/",
+        title="Dashboard",
         description="Weather and astronomy dashboard for my location in Stockholm.",
         icon="fa-solid fa-smog")
         }}
-
 
     </div>
 </section>

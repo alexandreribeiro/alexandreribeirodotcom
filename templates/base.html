@@ -6,6 +6,7 @@
     <title>Alexandre Ribeiro</title>
     <link href="{{ ROOT_URL }}/assets/css/styles.css" rel="stylesheet">
     <link href="{{ ROOT_URL }}/assets/css/pico.min.css" rel="stylesheet">
+    <link href="{{ ROOT_URL }}/assets/css/menu.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Markazi+Text:wght@400..700&display=swap"
@@ -14,15 +15,23 @@
     {% block extra_headers %}
     {% endblock %}
 </head>
-<body class="container">
-<header>
+<body>
+<header class="is-fixed-above-lg">
     {% include 'navbar.html' %}
 </header>
-<main>
-    {% block content %}
-    {% endblock %}
+<main class="container has-table-of-contents page-grid">
+    {% include 'left-menu.html' %}
+    <div>
+        {% block content %}
+        {% endblock %}
+    </div>
+    <div>
+        {% block right_menu %}
+        {% endblock %}
+    </div>
 </main>
-<footer>
+<hr>
+<footer class="container">
     {% include 'footer.html' %}
 </footer>
 {% block extra_javascript %}

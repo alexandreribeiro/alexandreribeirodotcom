@@ -4,7 +4,7 @@ from jinja2 import Environment, FileSystemLoader
 
 root_build_folder = "_build"
 build_folder_list = [root_build_folder, f"{root_build_folder}/world-map", f"{root_build_folder}/about",
-                     f"{root_build_folder}/weather-dashboard"]
+                     f"{root_build_folder}/dashboard"]
 assets_folder = "templates/assets"
 
 if os.path.exists(root_build_folder):
@@ -23,22 +23,22 @@ pages = [
     {
         "template": "pages/index.html",
         "output": "index.html",
-        "data": {}
+        "data": {"selected_menu": "index"}
     },
     {
         "template": "pages/world-map/index.html",
         "output": "world-map/index.html",
-        "data": {}
+        "data": {"selected_menu": "world-map"}
     },
     {
         "template": "pages/about/index.html",
         "output": "about/index.html",
-        "data": {}
+        "data": {"selected_menu": "about"}
     },
     {
-        "template": "pages/weather-dashboard/index.html",
-        "output": "weather-dashboard/index.html",
-        "data": {}
+        "template": "pages/dashboard/index.html",
+        "output": "dashboard/index.html",
+        "data": {"selected_menu": "dashboard"}
     }
 ]
 

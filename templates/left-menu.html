@@ -1,0 +1,39 @@
+<aside id="left-menu">
+    <nav class="is-sticky-above-lg">
+        <details>
+            <summary><a class="secondary" data-discover="true"
+                        {% if selected_menu== "index" %}aria-current="page"{% endif %}
+                        href="{{ ROOT_URL }}/">Home</a></summary>
+        </details>
+        <details {% if selected_menu in (
+        "astronomy-js", "astronomy-svg") %}open=""{% endif %}>
+        <summary>Projects</summary>
+        <ul>
+            <li><a class="secondary" data-discover="true" href="/astronomy-js">AstronomyJS</a></li>
+            <li><a class="secondary" data-discover="true" href="/astronomy-svg">AstronomySVG</a></li>
+        </ul>
+        </details>
+        <details {% if selected_menu in (
+        "dashboard", "world-map", "youtube-channel") %}open=""{% endif %}>
+        <summary>Personal</summary>
+        <ul>
+            <li><a class="secondary" data-discover="true"
+                   {% if selected_menu== "dashboard" %}aria-current="page"{% endif %} href="/dashboard">Dashboard</a>
+            </li>
+            <li><a class="secondary" data-discover="true"
+                   {% if selected_menu== "world-map" %}aria-current="page"{% endif %} href="/world-map">World
+                Check-Ins</a></li>
+            <li><a class="secondary" data-discover="true"
+                   {% if selected_menu== "youtube-channel" %}aria-current="page"{% endif %}
+                href="/youtube-channel">Youtube Channel</a></li>
+        </ul>
+        </details>
+        <details {% if selected_menu in (
+        "about") %}open=""{% endif %}>
+            <summary><a class="secondary" data-discover="true"
+                        {% if selected_menu== "about" %}aria-current="page"{% endif %}
+                href="{{ ROOT_URL }}/about">About</a>
+            </summary>
+        </details>
+    </nav>
+</aside>

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block extra_headers %}
+<script src="{{ ROOT_URL }}/assets/js/astronomy-svg.min.js"></script>
+{% endblock %}
+
+{% block extra_javascript %}
+<script>
+    const stockholmLocation = {"latitude": 59.445, "longitude": 18.07};
+    const rioLocation = {"latitude": -22.8, "longitude": -43.3};
+    let astronomySVG = AstronomySVG.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
+
+function updateAllTilesWithTime(referenceDate) {
+    astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
+    astronomySVG.setTimezone("Europe/Stockholm");
+    astronomySVG.setDate(referenceDate);
+
+    document.getElementById('drawPlanetMercuryVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mercury", 100);
+    document.getElementById('drawPlanetVenusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Venus", 100);
+    document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
+    document.getElementById('drawPlanetJupiterVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Jupiter", 100);
+    document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
+    document.getElementById('drawPlanetUranusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Uranus", 100);
+    document.getElementById('drawPlanetNeptuneVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Neptune", 100);
+    document.getElementById('drawPlanetPlutoVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Pluto", 100);
+    document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+
+    astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
+    astronomySVG.setTimezone("America/Sao_Paulo");
+    document.getElementById('drawSunAltitudePathRio').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+}
+
+updateAllTilesWithTime(new Date());
+</script>
+{% endblock %}
+
+{% block content %}
+<hgroup>
+<h1>Dashboard</h1>
+<p>Weather and astronomy dashboard.</p>
+</hgroup>
+
+<article>
+    <header>Sun</header>
+    <div class="grid">
+        <div class="card-image" id="drawSunAltitudePathStockholm"></div>
+        <div class="card-image" id="drawSunAltitudePathRio"></div>
+    </div>
+</article>
+
+<article>
+    <header>Planets</header>
+    <div class="grid">
+        <div class="card-image" id="drawPlanetMercuryVisibility"></div>
+        <div class="card-image" id="drawPlanetVenusVisibility"></div>
+        <div class="card-image" id="drawPlanetMarsVisibility"></div>
+        <div class="card-image" id="drawPlanetJupiterVisibility"></div>
+        <div class="card-image" id="drawPlanetSaturnVisibility"></div>
+        <div class="card-image" id="drawPlanetUranusVisibility"></div>
+        <div class="card-image" id="drawPlanetNeptuneVisibility"></div>
+        <div class="card-image" id="drawPlanetPlutoVisibility"></div>
+    </div>
+</article>
+{% endblock %}
