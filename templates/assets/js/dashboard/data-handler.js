@@ -1,0 +1,98 @@
+function fetchDashboardData(astronomyJS) {
+    fetch(`https://gist.githubusercontent.com/alexandreribeiro/49274eb247138291249ff9fe6ae3c4de/raw/dashboard.json`)
+        .then(response => response.json())
+        .then(data => {
+            Object.entries(data['weather']['hourly']).forEach(([_, it]) => {
+                let parsedDate = new Date(it['timestamp'] * 1000);
+                it.parsedDate = parsedDate;
+                it.sunAltitude = astronomyJS.getAltAzCoordinatesForObject('Sun', parsedDate).latitude;
+            });
+
+            const tenMinutesInMilliseconds = 60 * 1000 * 15;
+            let lastUpdatedDate = new Date(data['lastUpdated']);
+            let lastUpdatedOutdoorsPressure = new Date(data['homeAssistant']['atmosphericPressure']['lastUpdated']);
+            let lastUpdatedOutdoorsTemperature = new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']);
+            let lastUpdatedBalconyTemperature = new Date(data['homeAssistant']['balconyTemperature']['lastUpdated']);
+            let lastUpdatedOfficeTemperature = new Date(data['homeAssistant']['officeTemperature']['lastUpdated']);
+            let lastUpdatedBedroomTemperature = new Date(data['homeAssistant']['bedroomTemperature']['lastUpdated']);
+            let lastUpdatedOtherBedroomTemperature = new Date(data['homeAssistant']['otherBedroomTemperature']['lastUpdated']);
+
+            document.getElementById('outdoorsPressureOutdated').textContent =
+                (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsPressure) > tenMinutesInMilliseconds) ? `⏳` : ``;
+            document.getElementById('outdoorsOutdated').textContent =
+                (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+            document.getElementById('balconyOutdated').textContent =
+                (Math.abs(lastUpdatedDate - lastUpdatedBalconyTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+            document.getElementById('officeOutdated').textContent =
+                (Math.abs(lastUpdatedDate - lastUpdatedOfficeTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+            document.getElementById('otherBedroomOutdated').textContent =
+                (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+            document.getElementById('bedroomOutdated').textContent =
+                (Math.abs(lastUpdatedDate - lastUpdatedBedroomTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+
+            document.getElementById('lastUpdated').textContent =
+                `Last updated: ${lastUpdatedDate.toLocaleString('sv-SE')}`;
+            document.getElementById('ESSA').textContent = data['metar']['ESSA'].split('\n')[1];
+            document.getElementById('ESSB').textContent = data['metar']['ESSB'].split('\n')[1];
+            document.getElementById('outdoorsPressureRow').title =
+                lastUpdatedOutdoorsPressure.toLocaleString('sv-SE');
+            document.getElementById('outdoorsPressure').textContent =
+                `${data['homeAssistant']['atmosphericPressure']['value']}
+                ${data['homeAssistant']['atmosphericPressure']['unit']}`;
+            document.getElementById('outdoorsPressureTrend').textContent =
+                `${data['homeAssistant']['atmosphericPressureTrend']['value']}
+                (${lastUpdatedOutdoorsPressure.toLocaleString('sv-SE')})`;
+            document.getElementById('outdoorsRow').title =
+                `${new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']).toLocaleString('sv-SE')}`;
+            document.getElementById('outdoorsTemperature').textContent =
+                `${data['homeAssistant']['outdoorsTemperature']['value']}
+                ${data['homeAssistant']['outdoorsTemperature']['unit']}`;
+            document.getElementById('outdoorsHumidity').textContent =
+                `${data['homeAssistant']['outdoorsHumidity']['value']}
+                ${data['homeAssistant']['outdoorsHumidity']['unit']}`;
+            document.getElementById('balconyRow').title =
+                `${new Date(data['homeAssistant']['balconyTemperature']['lastUpdated']).toLocaleString('sv-SE')}`;
+            document.getElementById('balconyTemperature').textContent =
+                `${data['homeAssistant']['balconyTemperature']['value']}
+            ${data['homeAssistant']['balconyTemperature']['unit']}`;
+            document.getElementById('balconyHumidity').textContent =
+                `${data['homeAssistant']['balconyHumidity']['value']}
+                ${data['homeAssistant']['balconyHumidity']['unit']}`;
+            document.getElementById('officeRow').title =
+                `${new Date(data['homeAssistant']['officeTemperature']['lastUpdated']).toLocaleString('sv-SE')}`;
+            document.getElementById('officeTemperature').textContent =
+                `${data['homeAssistant']['officeTemperature']['value']}
+                ${data['homeAssistant']['officeTemperature']['unit']}`;
+            document.getElementById('officeHumidity').textContent =
+                `${data['homeAssistant']['officeHumidity']['value']}
+                ${data['homeAssistant']['officeHumidity']['unit']}`
+            document.getElementById('bedroomRow').title =
+                `${new Date(data['homeAssistant']['bedroomTemperature']['lastUpdated']).toLocaleString('sv-SE')}`;
+            document.getElementById('bedroomTemperature').textContent =
+                `${data['homeAssistant']['bedroomTemperature']['value']}
+                ${data['homeAssistant']['bedroomTemperature']['unit']}`;
+            document.getElementById('bedroomHumidity').textContent =
+                `${data['homeAssistant']['bedroomHumidity']['value']}
+                ${data['homeAssistant']['bedroomHumidity']['unit']}`;
+            document.getElementById('otherBedroomRow').title =
+                `${new Date(data['homeAssistant']['otherBedroomTemperature']['lastUpdated']).toLocaleString('sv-SE')}`;
+            document.getElementById('otherBedroomTemperature').textContent =
+                `${data['homeAssistant']['otherBedroomTemperature']['value']}
+                ${data['homeAssistant']['otherBedroomTemperature']['unit']}`;
+            document.getElementById('otherBedroomHumidity').textContent =
+                `${data['homeAssistant']['otherBedroomHumidity']['value']}
+                ${data['homeAssistant']['otherBedroomHumidity']['unit']}`;
+            drawSVGGauge('#atmosphericPressureGauge', data['homeAssistant']['atmosphericPressure']['value'],
+                data['homeAssistant']['atmosphericPressure']['unit']);
+            updateAllTilesWithTime(new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']))
+            drawRainGraph('#rainGraph', new Date(data['weather']['nextHour']['startDate']), data['weather']['nextHour']['values']);
+            drawWindGauge('#windDirectionGauge', parseWindDirection(data['metar']['ESSA'].split('\n')[1]).direction);
+            drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
+            drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
+        })
+        .catch(error => {
+            console.error("Error fetching Gist:", error);
+            document.getElementById("lastUpdated").textContent = "Failed to load gist.";
+        });
+}
+

@@ -17,18 +17,22 @@
 </head>
 <body>
 <header class="is-fixed-above-lg">
-    {% include 'navbar.html' %}
+    {% include 'navbar.html' with context %}
 </header>
-<main class="container has-table-of-contents page-grid">
+<main class="container {% if has_left_menu %}page-grid has-table-of-contents{%elif is_wide%}wide{%else%}narrow{% endif %}">
+    {% if has_left_menu %}
     {% include 'left-menu.html' %}
+    {% endif %}
+
     <div>
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </div>
+
+    {% if has_left_menu %}
     <div>
-        {% block right_menu %}
-        {% endblock %}
+        {% block right_menu %}{% endblock %}
     </div>
+    {% endif %}
 </main>
 <hr>
 <footer class="container">

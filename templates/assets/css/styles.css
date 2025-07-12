@@ -133,3 +133,30 @@
 .no-break {
     white-space: nowrap;
 }
+
+.center-content {
+    text-align: center;
+}
+
+.bar {
+    fill: #3498db;
+}
+.bar:hover {
+    fill: #1f77b4;
+}
+.axis path,
+.axis line {
+    stroke: #888;
+}
+.x-axis text {
+    font-size: 10px;
+}
+
+.padless td, .padless th {
+    padding: 0 !important;
+}
+
+.center-content td, .center-content th {
+    text-align: center;
+    vertical-align: middle;
+}

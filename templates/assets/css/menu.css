@@ -6,12 +6,16 @@ body > header.is-fixed-above-lg + main {
     --pico-main-top-offset: var(--pico-header-height)
 }
 
-body > main {
+body > main.has-table-of-contents {
     display: grid;
     grid-template-rows: 1fr;
     row-gap: 2rem;
     margin-bottom: calc(var(--pico-spacing) * 4);
     padding: 0
+}
+
+body > main.narrow {
+    max-width: 960px;
 }
 
 body > main > * {

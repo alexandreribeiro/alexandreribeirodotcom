@@ -23,7 +23,7 @@ pages = [
     {
         "template": "pages/index.html",
         "output": "index.html",
-        "data": {"selected_menu": "index"}
+        "data": {"selected_menu": "index", "has_left_menu": False}
     },
     {
         "template": "pages/world-map/index.html",
@@ -38,7 +38,7 @@ pages = [
     {
         "template": "pages/dashboard/index.html",
         "output": "dashboard/index.html",
-        "data": {"selected_menu": "dashboard"}
+        "data": {"selected_menu": "dashboard", "is_wide": True}
     }
 ]
 

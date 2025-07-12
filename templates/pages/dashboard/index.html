@@ -2,6 +2,58 @@
 
 {% block extra_headers %}
 <script src="{{ ROOT_URL }}/assets/js/astronomy-svg.min.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/astronomy-js.min.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/dashboard/graph-creator.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/dashboard/data-handler.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+    .area-clouds {
+        fill: lightgray;
+        opacity: 0.5;
+    }
+
+    .area-rain {
+        fill: cornflowerblue;
+        opacity: 0.5;
+    }
+
+    .area-snow {
+        fill: aliceblue;
+        opacity: 0.5;
+    }
+
+    .sun-h-18 {
+        background-color: rgba(0, 0, 0, 1);
+        color: white !important;
+    }
+
+    .sun-h-12 {
+        background-color: rgba(0, 35, 70, 1);
+        color: white !important;
+    }
+
+    .sun-h-6 {
+        background-color: rgba(0, 51, 102, 1);
+        color: white !important;
+    }
+
+    .sun-h-0 {
+        background-color: rgba(0, 90, 180, 0.7);
+        color: white !important;
+    }
+
+    .sun-h-horizon {
+        background-color: rgba(255, 200, 0, 0.7);
+        color: white !important;
+    }
+
+    .sun-h-up {
+        background-color: rgba(135, 206, 235, 0.7);
+        color: white !important;
+    }
+</style>
+
 {% endblock %}
 
 {% block extra_javascript %}
@@ -9,56 +61,221 @@
     const stockholmLocation = {"latitude": 59.445, "longitude": 18.07};
     const rioLocation = {"latitude": -22.8, "longitude": -43.3};
     let astronomySVG = AstronomySVG.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
+    let astronomyJS = AstronomyJS.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
+    fetchDashboardData(astronomyJS);
 
-function updateAllTilesWithTime(referenceDate) {
-    astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
-    astronomySVG.setTimezone("Europe/Stockholm");
-    astronomySVG.setDate(referenceDate);
+    function parseWindDirection(metar) {
+        const windRegex = /\b(\d{3}|VRB)(\d{2,3})(G\d{2,3})?KT\b/;
+        const match = metar.match(windRegex);
+        if (!match) return null;
 
-    document.getElementById('drawPlanetMercuryVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mercury", 100);
-    document.getElementById('drawPlanetVenusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Venus", 100);
-    document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
-    document.getElementById('drawPlanetJupiterVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Jupiter", 100);
-    document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
-    document.getElementById('drawPlanetUranusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Uranus", 100);
-    document.getElementById('drawPlanetNeptuneVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Neptune", 100);
-    document.getElementById('drawPlanetPlutoVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Pluto", 100);
-    document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+        const direction = match[1] === "VRB" ? "Variable" : parseInt(match[1], 10);
+        const speed = parseInt(match[2], 10);
+        const gust = match[3] ? parseInt(match[3].substring(1), 10) : null;
 
-    astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
-    astronomySVG.setTimezone("America/Sao_Paulo");
-    document.getElementById('drawSunAltitudePathRio').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
-}
+        return {direction, speed, gust};
+    }
 
-updateAllTilesWithTime(new Date());
+    function getSunAltitudeClass(altitude) {
+        if (altitude < -18) {
+            return 'sun-h-18';
+        } else if (altitude < -12) {
+            return 'sun-h-12';
+        } else if (altitude < -6) {
+            return 'sun-h-6';
+        } else if (altitude < 0) {
+            return 'sun-h-0';
+        } else if (altitude < 6) {
+            return 'sun-h-horizon';
+        } else {
+            return 'sun-h-up';
+        }
+    }
+
+    function drawHourlyWeatherTable(htmlElementId, hourly) {
+        const table = document.createElement("table");
+        table.classList.add("padless");
+        table.classList.add("center-content");
+
+        table.innerHTML = `
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>Temp (°C)</th>
+      <th>Humidity (%)</th>
+      <th>Wind (m/s)</th>
+      <th>Pressure (hPa)</th>
+      <th>Clouds (%)</th>
+      <th>Precip. Chance</th>
+      <th>Precip. (mm)</th>
+      <th>Weather</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+`;
+
+        const tbody = table.querySelector("tbody");
+
+        function formatTime(unix) {
+            const date = new Date(unix * 1000);
+            return date.toLocaleString("sv-SE", {weekday: 'short', hour: "2-digit", minute: "2-digit", hour12: false});
+        }
+
+        Object.values(hourly).forEach(hour => {
+            const cloudCover = hour.cloudCover;
+            const row = document.createElement("tr");
+            row.innerHTML = `
+    <td class="${getSunAltitudeClass(hour.sunAltitude)}">${formatTime(hour.timestamp)}</td>
+    <td>${hour.temperature.toFixed(1)}</td>
+    <td>${hour.humidity}</td>
+    <td style="background-color: ${hour.windSpeed < 5.5 ? '' : hour.windSpeed > 10.7 ? 'rgba(100, 0, 0, 50)' : 'rgba(100, 100, 0, 50)'}">${hour.windSpeed.toFixed(1)} ${drawSvgArrow(hour.windDirection)}</td>
+    <td>${hour.pressure}</td>
+    <td style="background-color: hsla(59, ${100 - cloudCover}%, ${cloudCover > 50 ? 150 - cloudCover : 40 + cloudCover}%, 0.4)">${cloudCover}</td>
+    <td style="background-color: rgba(192, 246, 251, ${hour.chanceOfPrecipitation / 4})">${(hour.chanceOfPrecipitation * 100).toFixed(0)}%</td>
+    <td>${hour.rain > 0 ? '💧 ' + hour.rain : ''}${hour.snow > 0 ? '❄️ ' + hour.snow : ''}</td>
+    <td>${hour.weather.join(", ")}</td>
+  `;
+            tbody.appendChild(row);
+        });
+        document.getElementById(htmlElementId).appendChild(table);
+    }
+
+    function updateAllTilesWithTime(referenceDate) {
+        astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
+        astronomySVG.setTimezone("Europe/Stockholm");
+        astronomySVG.setDate(referenceDate);
+
+        document.getElementById('drawPlanetMercuryVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mercury", 100);
+        document.getElementById('drawPlanetVenusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Venus", 100);
+        document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
+        document.getElementById('drawPlanetJupiterVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Jupiter", 100);
+        document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
+        document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+
+        astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
+        astronomySVG.setTimezone('America/Sao_Paulo');
+        document.getElementById('drawSunAltitudePathRio').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+    }
+
+    updateAllTilesWithTime(new Date());
 </script>
 {% endblock %}
 
 {% block content %}
 <hgroup>
-<h1>Dashboard</h1>
-<p>Weather and astronomy dashboard.</p>
+    <h1>Dashboard</h1>
+    <p>Weather and astronomy dashboard.</p>
 </hgroup>
 
-<article>
-    <header>Sun</header>
-    <div class="grid">
-        <div class="card-image" id="drawSunAltitudePathStockholm"></div>
-        <div class="card-image" id="drawSunAltitudePathRio"></div>
+<div class="grid">
+    <div style="grid-column: span 2;">
+        <article>
+            <header>Current Weather</header>
+            <table id="solarSystemTable">
+                <tbody>
+                <tr id="outdoorsPressureRow">
+                    <td>Pressure</td>
+                    <td id="outdoorsPressureOutdated"></td>
+                    <td class="center-content" id="outdoorsPressure"></td>
+                    <td class="center-content" id="outdoorsPressureTrend"></td>
+                </tr>
+                <tr id="outdoorsRow">
+                    <td>Outdoors</td>
+                    <td id="outdoorsOutdated"></td>
+                    <td class="center-content" id="outdoorsTemperature"></td>
+                    <td class="center-content" id="outdoorsHumidity"></td>
+                </tr>
+                <tr id="balconyRow">
+                    <td>Balcony</td>
+                    <td id="balconyOutdated"></td>
+                    <td class="center-content" id="balconyTemperature"></td>
+                    <td class="center-content" id="balconyHumidity"></td>
+                </tr>
+                <tr id="officeRow">
+                    <td>Office</td>
+                    <td id="officeOutdated"></td>
+                    <td class="center-content" id="officeTemperature"></td>
+                    <td class="center-content" id="officeHumidity"></td>
+                </tr>
+                <tr id="bedroomRow">
+                    <td>Bedroom</td>
+                    <td id="bedroomOutdated"></td>
+                    <td class="center-content" id="bedroomTemperature"></td>
+                    <td class="center-content" id="bedroomHumidity"></td>
+                </tr>
+                <tr id="otherBedroomRow">
+                    <td>Other Bedroom</td>
+                    <td id="otherBedroomOutdated"></td>
+                    <td class="center-content" id="otherBedroomTemperature"></td>
+                    <td class="center-content" id="otherBedroomHumidity"></td>
+                </tr>
+                <tr>
+                    <td>Arlanda</td>
+                    <td class="center-content" colspan="3" id="ESSA"></td>
+                </tr>
+                <tr>
+                    <td>Bromma</td>
+                    <td class="center-content" colspan="3" id="ESSB"></td>
+                </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <div class="grid">
+            <article>
+                <header>Atmospheric Pressure</header>
+                <div class="center-content">
+                    <svg id="atmosphericPressureGauge" width="200" height="200"></svg>
+                </div>
+            </article>
+            <article>
+                <header>Rain</header>
+                <svg id="rainGraph" width="400" height="200"></svg>
+            </article>
+        </div>
+
+        <div class="grid">
+            <article>
+                <header>Wind</header>
+                <div class="center-content">
+                    <svg id="windDirectionGauge" width="200" height="200"></svg>
+                </div>
+            </article>
+            <article>
+                <header>Cloud Coverage</header>
+                <div class="center-content">
+                    <svg id="cloudCoverageGraph" width="400" height="200"></svg>
+                </div>
+            </article>
+        </div>
     </div>
-</article>
+    <div>
+        <article>
+            <header>Stockholm</header>
+            <div class="center-content" id="drawSunAltitudePathStockholm"></div>
+        </article>
+
+        <article>
+            <header>Rio de Janeiro</header>
+            <div class="center-content" id="drawSunAltitudePathRio"></div>
+        </article>
+
+        <article>
+            <header>Planets</header>
+            <div id="drawPlanetMercuryVisibility"></div>
+            <div id="drawPlanetVenusVisibility"></div>
+            <div id="drawPlanetMarsVisibility"></div>
+            <div id="drawPlanetJupiterVisibility"></div>
+            <div id="drawPlanetSaturnVisibility"></div>
+        </article>
+    </div>
+</div>
+
 
 <article>
-    <header>Planets</header>
-    <div class="grid">
-        <div class="card-image" id="drawPlanetMercuryVisibility"></div>
-        <div class="card-image" id="drawPlanetVenusVisibility"></div>
-        <div class="card-image" id="drawPlanetMarsVisibility"></div>
-        <div class="card-image" id="drawPlanetJupiterVisibility"></div>
-        <div class="card-image" id="drawPlanetSaturnVisibility"></div>
-        <div class="card-image" id="drawPlanetUranusVisibility"></div>
-        <div class="card-image" id="drawPlanetNeptuneVisibility"></div>
-        <div class="card-image" id="drawPlanetPlutoVisibility"></div>
-    </div>
+    <header>Weather</header>
+    <div id="hourlyWeatherTable"></div>
 </article>
+
+<p id="lastUpdated"></p>
 {% endblock %}
