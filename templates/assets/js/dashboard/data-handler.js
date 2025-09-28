@@ -16,6 +16,16 @@ function fetchDashboardData(astronomyJS) {
             let lastUpdatedOfficeTemperature = new Date(data['homeAssistant']['officeTemperature']['lastUpdated']);
             let lastUpdatedBedroomTemperature = new Date(data['homeAssistant']['bedroomTemperature']['lastUpdated']);
             let lastUpdatedOtherBedroomTemperature = new Date(data['homeAssistant']['otherBedroomTemperature']['lastUpdated']);
+            const sunEphemeris = {
+                "rise": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "RISE"),
+                "set": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SET"),
+                "civilTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_START"),
+                "civilTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_END"),
+                "nauticalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_START"),
+                "nauticalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_END"),
+                "astronomicalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_START"),
+                "astronomicalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_END"),
+            }
 
             document.getElementById('outdoorsPressureOutdated').textContent =
                 (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsPressure) > tenMinutesInMilliseconds) ? `⏳` : ``;
@@ -89,6 +99,7 @@ function fetchDashboardData(astronomyJS) {
             drawWindGauge('#windDirectionGauge', parseWindDirection(data['metar']['ESSA'].split('\n')[1]).direction);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
+            drawAstronomicalClock('#astronomicalClock', sunEphemeris);
         })
         .catch(error => {
             console.error("Error fetching Gist:", error);
