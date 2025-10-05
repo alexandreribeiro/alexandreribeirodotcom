@@ -450,6 +450,26 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
     const sunX2 = center.x + radius * 1.1 * Math.cos(sunPointerAngleInRad); // head
     const sunY2 = center.y + radius * 1.1 * Math.sin(sunPointerAngleInRad);
 
+    // Draw yellow tick-style markers for solar transit and lower solar transit on the 24h outer ring
+    const drawTransitLine = (dateObj) => {
+        if (!dateObj || typeof dateObj.getHours !== 'function') return;
+        const angle = (((dateObj.getHours() * 60 + dateObj.getMinutes()) / 4) + 90) * (Math.PI / 180);
+        const tx1 = center.x + Math.cos(angle) * (outerRadius);
+        const ty1 = center.y + Math.sin(angle) * (outerRadius);
+        const tx2 = center.x + Math.cos(angle) * (outerRadius * 0.94);
+        const ty2 = center.y + Math.sin(angle) * (outerRadius * 0.94);
+        svg.append("line")
+            .attr("x1", tx1)
+            .attr("y1", ty1)
+            .attr("x2", tx2)
+            .attr("y2", ty2)
+            .attr("stroke", "yellow")
+            .attr("stroke-width", 3);
+    };
+
+    drawTransitLine(sunEphemeris["solarTransit"]);
+    drawTransitLine(sunEphemeris["lowerSolarTransit"]);
+
     svg.append("line")
         .attr("x1", sunX1)
         .attr("y1", sunY1)

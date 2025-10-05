@@ -27,6 +27,8 @@ function fetchDashboardData(astronomyJS) {
                 "nauticalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_END"),
                 "astronomicalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_START"),
                 "astronomicalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_END"),
+                "solarTransit": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "TRANSIT"),
+                "lowerSolarTransit": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "LOWER_TRANSIT"),
             }
 
             document.getElementById('outdoorsPressureOutdated').textContent =
