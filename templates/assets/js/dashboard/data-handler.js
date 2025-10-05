@@ -19,6 +19,8 @@ function fetchDashboardData(astronomyJS) {
             const sunEphemeris = {
                 "rise": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "RISE"),
                 "set": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SET"),
+                "goldenHourStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_START"),
+                "goldenHourEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_END"),
                 "civilTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_START"),
                 "civilTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_END"),
                 "nauticalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_START"),
@@ -42,8 +44,8 @@ function fetchDashboardData(astronomyJS) {
 
             document.getElementById('lastUpdated').textContent =
                 `Last updated: ${lastUpdatedDate.toLocaleString('sv-SE')}`;
-            document.getElementById('ESSA').textContent = data['metar']['ESSA'].split('\n')[1];
-            document.getElementById('ESSB').textContent = data['metar']['ESSB'].split('\n')[1];
+            document.getElementById('ESSA').textContent = data.metar?.ESSA?.split('\n')[1];
+            document.getElementById('ESSB').textContent = data.metar?.ESSB?.split('\n')[1];
             document.getElementById('outdoorsPressureRow').title =
                 lastUpdatedOutdoorsPressure.toLocaleString('sv-SE');
             document.getElementById('outdoorsPressure').textContent =
@@ -96,7 +98,9 @@ function fetchDashboardData(astronomyJS) {
                 data['homeAssistant']['atmosphericPressure']['unit']);
             updateAllTilesWithTime(new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']))
             drawRainGraph('#rainGraph', new Date(data['weather']['nextHour']['startDate']), data['weather']['nextHour']['values']);
-            drawWindGauge('#windDirectionGauge', parseWindDirection(data['metar']['ESSA'].split('\n')[1]).direction);
+            const parsedEssaMetar = parseWindDirection(data.metar?.ESSA?.split('\n')[1]);
+            const essaWindSpeedInMetersPerSecond = parsedEssaMetar && typeof parsedEssaMetar.speed === 'number' ? parsedEssaMetar.speed * 0.514444 : null;
+            drawWindGauge('#windDirectionGauge', parsedEssaMetar?.direction, essaWindSpeedInMetersPerSecond);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
             drawAstronomicalClock('#astronomicalClock', sunEphemeris);
