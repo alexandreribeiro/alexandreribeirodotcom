@@ -90,26 +90,24 @@ function drawCloudCoverageGraph(svgSelector, dataDict) {
     g.append("g").call(yPrecipitationAxis);
 
     // Draw vertical lines at midnight to separate days
-    {
-        const [domainStart, domainEnd] = xTimeScale.domain();
-        const firstMidnight = d3.timeDay.ceil(domainStart);
-        const midnights = d3.timeDay.range(firstMidnight, domainEnd);
-        g.selectAll(".day-separator")
-            .data(midnights)
-            .enter()
-            .append("line")
-            .attr("class", "day-separator")
-            .attr("x1", d => xTimeScale(d))
-            .attr("x2", d => xTimeScale(d))
-            .attr("y1", 0)
-            .attr("y2", height - margin.bottom)
-            .attr("stroke", "#999")
-            .attr("stroke-dasharray", "4,3")
-            .attr("stroke-width", 1)
-            .attr("opacity", 0.6)
-            .attr("pointer-events", "none");
-        g.selectAll(".day-separator").raise();
-    }
+    const [domainStart, domainEnd] = xTimeScale.domain();
+    const firstMidnight = d3.timeDay.ceil(domainStart);
+    const midnights = d3.timeDay.range(firstMidnight, domainEnd);
+    g.selectAll(".day-separator")
+        .data(midnights)
+        .enter()
+        .append("line")
+        .attr("class", "day-separator")
+        .attr("x1", d => xTimeScale(d))
+        .attr("x2", d => xTimeScale(d))
+        .attr("y1", 0)
+        .attr("y2", height - margin.bottom)
+        .attr("stroke", "#999")
+        .attr("stroke-dasharray", "4,3")
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.6)
+        .attr("pointer-events", "none");
+    g.selectAll(".day-separator").raise();
 
     const areaClouds = d3.area().x(d => xTimeScale(d.date))
         .y0(d => yCloudCoverScale(d.cloudCoverage))
@@ -135,116 +133,125 @@ function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
     const radius = Math.min(width, height) / 2 - 20;
     const center = {x: width / 2, y: height / 2};
 
-    const YELLOW_THRESHOLD = 5.5; // m/s
-    const RED_THRESHOLD = 10.7;   // m/s
+    const drawArrow = (windDirection, windSpeedMps) => {
+        if (!windDirection || !windSpeedMps) return;
 
-    // Determine tier color based on wind speed; length will be proportional
-    const speed = (typeof windSpeedMps === 'number' && !isNaN(windSpeedMps)) ? windSpeedMps : 0;
-    let arrowColor, headFactor, tailFactor;
-    const strokeWidth = 4; // fixed thickness
-    const markerSize = 4;  // fixed arrowhead size
-    if (speed < YELLOW_THRESHOLD) {
-        arrowColor = '#2e6d32';
-    } else if (speed <= RED_THRESHOLD) {
-        arrowColor = '#f9a825';
-    } else {
-        arrowColor = '#c62828';
+        const YELLOW_THRESHOLD = 5.5;
+        const RED_THRESHOLD = 10.7;
+
+        // Determine tier color based on wind speed; length will be proportional
+        const speed = (typeof windSpeedMps === 'number' && !isNaN(windSpeedMps)) ? windSpeedMps : 0;
+        let arrowColor, headFactor, tailFactor, markerSize;
+        const strokeWidth = 4; // fixed thickness
+        if (speed < YELLOW_THRESHOLD) {
+            arrowColor = '#2e6d32';
+            markerSize = 3;
+        } else if (speed <= RED_THRESHOLD) {
+            arrowColor = '#f9a825';
+            markerSize = 4
+        } else {
+            arrowColor = '#c62828';
+            markerSize = 5;
+        }
+
+        const MIN_SPEED = 1;
+        const MAX_SPEED = RED_THRESHOLD; // 10.7 m/s
+        const H_MIN = 0.15, H_MAX = 0.75; // head length factors
+        const T_MIN = 0.20, T_MAX = 0.90; // tail length factors
+
+        const clamped = Math.max(MIN_SPEED, Math.min(MAX_SPEED, speed));
+        const t = (clamped - MIN_SPEED) / (MAX_SPEED - MIN_SPEED);
+        headFactor = H_MIN + t * (H_MAX - H_MIN);
+        tailFactor = T_MIN + t * (T_MAX - T_MIN);
+
+        svg.append("defs")
+            .append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 0 10 10")
+            .attr("refX", 0)
+            .attr("refY", 5)
+            .attr("markerWidth", markerSize)
+            .attr("markerHeight", markerSize)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M 0 0 L 10 5 L 0 10 z")
+            .attr("fill", arrowColor);
+
+        const angleRad = (windDirection + 90) * Math.PI / 180;
+        const x1 = center.x - radius * tailFactor * Math.cos(angleRad);
+        const y1 = center.y - radius * tailFactor * Math.sin(angleRad);
+        const x2 = center.x + radius * headFactor * Math.cos(angleRad);
+        const y2 = center.y + radius * headFactor * Math.sin(angleRad);
+
+        svg.append("line")
+            .attr("x1", x1)
+            .attr("y1", y1)
+            .attr("x2", x2)
+            .attr("y2", y2)
+            .attr("stroke", arrowColor)
+            .attr("stroke-width", strokeWidth)
+            .attr("marker-end", "url(#arrow)")
+            .attr("stroke-linecap", "round");
+    };
+
+    drawCompass = () => {
+        // Draw compass background
+        svg.append("circle")
+            .attr("cx", center.x)
+            .attr("cy", center.y)
+            .attr("r", radius)
+            .attr("fill", "none")
+            .attr("stroke", "#aaa");
+
+        // Cardinal points
+        const directions = [
+            {label: "N", angle: 0},
+            {label: "E", angle: 90},
+            {label: "S", angle: 180},
+            {label: "W", angle: 270},
+        ];
+
+        directions.forEach(d => {
+            const angleRad = (d.angle - 90) * Math.PI / 180;
+            const x = center.x + (radius - 15) * Math.cos(angleRad);
+            const y = center.y + (radius - 15) * Math.sin(angleRad);
+            svg.append("text")
+                .attr("x", x)
+                .attr("y", y)
+                .attr("text-anchor", "middle")
+                .attr("alignment-baseline", "middle")
+                .attr("font-size", "16px")
+                .text(d.label);
+        });
+
+        const scale = d3.scaleLinear().domain([0, 360]).range([0, 2 * Math.PI]);
+
+        const arc = svg.append("g").attr("transform", `translate(${center.x},${center.y})`);
+        const ticks = d3.range(0, 360, 3);
+        ticks.forEach(angleInDegrees => {
+            const angle = scale(angleInDegrees);
+            const x1 = Math.cos(angle) * (radius - 10);
+            const y1 = Math.sin(angle) * (radius - 10);
+            const x2 = Math.cos(angle) * radius;
+            const y2 = Math.sin(angle) * radius;
+            arc.append("line")
+                .attr("x1", x1).attr("y1", y1)
+                .attr("x2", x2).attr("y2", y2)
+                .attr("stroke", "#333")
+                .attr("stroke-width", angleInDegrees % 45 === 0 ? 3 : 1);
+        });
     }
 
-    // Proportional arrow length: map [1 m/s .. 10.7 m/s] -> [min..max] factors
-    const MIN_SPEED = 1;
-    const MAX_SPEED = RED_THRESHOLD; // 10.7 m/s
-    const H_MIN = 0.15, H_MAX = 0.75; // head length factors
-    const T_MIN = 0.20, T_MAX = 0.90; // tail length factors
+    drawArrow(windDirection, windSpeedMps);
 
-    const clamped = Math.max(MIN_SPEED, Math.min(MAX_SPEED, speed));
-    const t = (clamped - MIN_SPEED) / (MAX_SPEED - MIN_SPEED);
-    headFactor = H_MIN + t * (H_MAX - H_MIN);
-    tailFactor = T_MIN + t * (T_MAX - T_MIN);
-
-    svg.append("defs")
-        .append("marker")
-        .attr("id", "arrow")
-        .attr("viewBox", "0 0 10 10")
-        .attr("refX", 0)
-        .attr("refY", 5)
-        .attr("markerWidth", markerSize)
-        .attr("markerHeight", markerSize)
-        .attr("orient", "auto")
-        .append("path")
-        .attr("d", "M 0 0 L 10 5 L 0 10 z")
-        .attr("fill", arrowColor);
-
-// Draw compass background
+    // Center dot
     svg.append("circle")
         .attr("cx", center.x)
         .attr("cy", center.y)
-        .attr("r", radius)
-        .attr("fill", "none")
-        .attr("stroke", "#aaa");
+        .attr("r", 3.5)
+        .attr("fill", "#aaa");
 
-// Cardinal points
-    const directions = [
-        {label: "N", angle: 0},
-        {label: "E", angle: 90},
-        {label: "S", angle: 180},
-        {label: "W", angle: 270},
-    ];
-
-    directions.forEach(d => {
-        const angleRad = (d.angle - 90) * Math.PI / 180;
-        const x = center.x + (radius - 15) * Math.cos(angleRad);
-        const y = center.y + (radius - 15) * Math.sin(angleRad);
-        svg.append("text")
-            .attr("x", x)
-            .attr("y", y)
-            .attr("text-anchor", "middle")
-            .attr("alignment-baseline", "middle")
-            .attr("font-size", "16px")
-            .text(d.label);
-    });
-
-
-    const scale = d3.scaleLinear().domain([0, 360]).range([0, 2 * Math.PI]);
-
-    const arc = svg.append("g").attr("transform", `translate(${center.x},${center.y})`);
-    const ticks = d3.range(0, 360, 3);
-    ticks.forEach(angleInDegrees => {
-        const angle = scale(angleInDegrees);
-        const x1 = Math.cos(angle) * (radius - 10);
-        const y1 = Math.sin(angle) * (radius - 10);
-        const x2 = Math.cos(angle) * radius;
-        const y2 = Math.sin(angle) * radius;
-        arc.append("line")
-            .attr("x1", x1).attr("y1", y1)
-            .attr("x2", x2).attr("y2", y2)
-            .attr("stroke", "#333")
-            .attr("stroke-width", angleInDegrees % 45 === 0 ? 3 : 1);
-    });
-
-
-    const angleRad = (windDirection + 90) * Math.PI / 180;
-    const x1 = center.x - radius * tailFactor * Math.cos(angleRad); // tail
-    const y1 = center.y - radius * tailFactor * Math.sin(angleRad);
-    const x2 = center.x + radius * headFactor * Math.cos(angleRad); // head
-    const y2 = center.y + radius * headFactor * Math.sin(angleRad);
-
-    svg.append("line")
-        .attr("x1", x1)
-        .attr("y1", y1)
-        .attr("x2", x2)
-        .attr("y2", y2)
-        .attr("stroke", arrowColor)
-        .attr("stroke-width", strokeWidth)
-        .attr("marker-end", "url(#arrow)")
-        .attr("stroke-linecap", "round");
-
-// Center dot
-    svg.append("circle")
-        .attr("cx", center.x)
-        .attr("cy", center.y)
-        .attr("r", 5)
-        .attr("fill", arrowColor);
+    drawCompass();
 }
 
 function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
@@ -291,7 +298,6 @@ function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
                 .attr("font-size", "12px")
                 .text(p);
         }
-
     });
 
     // Draw needle
@@ -367,8 +373,8 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
 
     // Arrow line across full diameter
     const hourPointerAngleInRad = (referenceTime.getHours() * 30 - 90 + referenceTime.getMinutes() / 2) * Math.PI / 180;
-    const x1 = center.x ; // tail
-    const y1 = center.y ;
+    const x1 = center.x; // tail
+    const y1 = center.y;
     const x2 = center.x + radius * 0.5 * Math.cos(hourPointerAngleInRad); // head
     const y2 = center.y + radius * 0.5 * Math.sin(hourPointerAngleInRad);
 
@@ -383,8 +389,8 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
 
     // Arrow line across full diameter
     const minutePointerAngleInRad = (referenceTime.getMinutes() * 6 - 90) * Math.PI / 180;
-    const xx1 = center.x ; // tail
-    const yy1 = center.y ;
+    const xx1 = center.x; // tail
+    const yy1 = center.y;
     const xx2 = center.x + radius * 0.7 * Math.cos(minutePointerAngleInRad); // head
     const yy2 = center.y + radius * 0.7 * Math.sin(minutePointerAngleInRad);
 
@@ -396,6 +402,22 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
         .attr("stroke", "white")
         .attr("stroke-linecap", "round")
         .attr("stroke-width", 6);
+
+    getEphemerisAngleInRadians = (ephemeris) => {
+        return (((ephemeris.getHours() * 60 + ephemeris.getMinutes()) / 4) - 180) * (Math.PI / 180);
+    }
+
+    drawSunAltitudeArc = (svg, radius, outerRadius, color, center, startAngle, endAngle) => {
+        svg.append("path")
+            .attr("class", "arc")
+            .attr("d", d3.arc()
+                .innerRadius(radius)
+                .outerRadius(outerRadius)
+                .startAngle(startAngle)
+                .endAngle(endAngle))
+            .attr("fill", color)
+            .attr("transform", `translate(${center.x},${center.y})`);
+    }
 
     // An arc will be created
     //svg, radius, outerRadius, color, center, startAngle, endAngle
@@ -410,6 +432,7 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
     drawSunAltitudeArc(svg, radius, outerRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["set"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]));
     drawSunAltitudeArc(svg, radius, outerRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["rise"]), getEphemerisAngleInRadians(sunEphemeris["goldenHourEnd"]));
     drawSunAltitudeArc(svg, radius, outerRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["goldenHourStart"]), getEphemerisAngleInRadians(sunEphemeris["set"]));
+
     d3.range(0, 360, 7.5).forEach(angleInDegrees => {
         const angle = scale(angleInDegrees);
         const x1 = Math.cos(angle) * (outerRadius) + center.x;
@@ -445,8 +468,8 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
 
     // Arrow line across full diameter
     const sunPointerAngleInRad = (((referenceTime.getHours() * 60 + referenceTime.getMinutes()) / 4) + 90) * (Math.PI / 180);
-    const sunX1 = center.x ; // tail
-    const sunY1 = center.y ;
+    const sunX1 = center.x; // tail
+    const sunY1 = center.y;
     const sunX2 = center.x + radius * 1.1 * Math.cos(sunPointerAngleInRad); // head
     const sunY2 = center.y + radius * 1.1 * Math.sin(sunPointerAngleInRad);
 
@@ -481,25 +504,9 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
 
 }
 
-function getEphemerisAngleInRadians(ephemeris) {
-    return (((ephemeris.getHours() * 60 + ephemeris.getMinutes()) / 4) - 180) * (Math.PI / 180);
-}
-
 function drawSvgArrow(angle) {
     return `<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
         <title>The wind comes from ${angle} degrees</title>
         <path d="M10 2 L14 10 H11 V18 H9 V10 H6 Z" fill="red" transform="rotate(${angle + 180}, 10, 10)" />
         </svg>`
-}
-
-function drawSunAltitudeArc(svg, radius, outerRadius, color, center, startAngle, endAngle) {
-    svg.append("path")
-        .attr("class", "arc")
-        .attr("d", d3.arc()
-            .innerRadius(radius)
-            .outerRadius(outerRadius)
-            .startAngle(startAngle)
-            .endAngle(endAngle))
-        .attr("fill", color)
-        .attr("transform", `translate(${center.x},${center.y})`);
 }

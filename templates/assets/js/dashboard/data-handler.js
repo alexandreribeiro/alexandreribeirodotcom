@@ -100,9 +100,16 @@ function fetchDashboardData(astronomyJS) {
                 data['homeAssistant']['atmosphericPressure']['unit']);
             updateAllTilesWithTime(new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']))
             drawRainGraph('#rainGraph', new Date(data['weather']['nextHour']['startDate']), data['weather']['nextHour']['values']);
-            const parsedEssaMetar = parseWindDirection(data.metar?.ESSA?.split('\n')[1]);
-            const essaWindSpeedInMetersPerSecond = parsedEssaMetar && typeof parsedEssaMetar.speed === 'number' ? parsedEssaMetar.speed * 0.514444 : null;
-            drawWindGauge('#windDirectionGauge', parsedEssaMetar?.direction, essaWindSpeedInMetersPerSecond);
+            let essaWindSpeedInMetersPerSecond, windDirection;
+            try {
+                const parsedEssaMetar = parseWindDirection(data.metar?.ESSA?.split('\n')[1]);
+                essaWindSpeedInMetersPerSecond = parsedEssaMetar && typeof parsedEssaMetar.speed === 'number' ? parsedEssaMetar.speed * 0.514444 : 0;
+                windDirection = parsedEssaMetar?.direction;
+            } catch (e) {
+                essaWindSpeedInMetersPerSecond = null;
+                windDirection = null;
+            }
+            drawWindGauge('#windDirectionGauge', windDirection, essaWindSpeedInMetersPerSecond);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
             drawAstronomicalClock('#astronomicalClock', sunEphemeris);
