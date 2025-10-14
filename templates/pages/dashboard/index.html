@@ -150,6 +150,8 @@
         document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
         document.getElementById('drawPlanetJupiterVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Jupiter", 100);
         document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
+        document.getElementById('drawSunAzimuth').innerHTML = astronomySVG.drawAzimuth("Sun", 100);
+        document.getElementById('drawSunAltitude').innerHTML = astronomySVG.drawAltitude("Sun", 100);
         document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
 
         astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
@@ -250,13 +252,15 @@
 </div>
         <div>
             <article>
-                <header>Planets</header>
+                <header>Astronomy</header>
                 <div class="grid">
-                <div id="drawPlanetMercuryVisibility"></div>
-                <div id="drawPlanetVenusVisibility"></div>
-                <div id="drawPlanetMarsVisibility"></div>
-                <div id="drawPlanetJupiterVisibility"></div>
-                <div id="drawPlanetSaturnVisibility"></div>
+                    <div id="drawSunAltitude"></div>
+                    <div id="drawSunAzimuth"></div>
+                    <div id="drawPlanetMercuryVisibility"></div>
+                    <div id="drawPlanetVenusVisibility"></div>
+                    <div id="drawPlanetMarsVisibility"></div>
+                    <div id="drawPlanetJupiterVisibility"></div>
+                    <div id="drawPlanetSaturnVisibility"></div>
                 </div>
             </article>
         </div>
