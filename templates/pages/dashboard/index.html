@@ -92,6 +92,91 @@
         }
     }
 
+    function drawSunEphemerisTable(htmlElementId, astronomyJS) {
+        function formatLocalTime(referenceDate) {
+            return new Intl.DateTimeFormat("sv-SE", {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).format(referenceDate);
+        }
+
+        const table = document.createElement("table");
+        table.classList.add("padless");
+        table.classList.add("center-content");
+
+        table.innerHTML = `
+  <thead>
+  <tr>
+    <th style="text-align: left;">Ephemeris</th>
+    <th>Time</th>
+  </tr>
+  </thead>
+  <tbody></tbody>
+`;
+        const tbody = table.querySelector("tbody");
+        let initialDate = new Date();
+
+        const ephemerisDict = {
+            "ASTRONOMICAL_TWILIGHT_START": {
+                name: "Astronomical Twilight Start",
+                color: "#2E3959",
+            },
+            "NAUTICAL_TWILIGHT_START": {
+                name: "Nautical Twilight Start",
+                color: "#3C4C87",
+            },
+            "CIVIL_TWILIGHT_START": {
+                name: "Civil Twilight Start",
+                color: "#668BDB",
+            },
+            "SUNRISE": {
+                name: "Sunrise",
+                color: "#D3AC5D",
+            },
+            "TRANSIT": {
+                name: "Transit",
+                color: "rgba(135, 206, 235, 0.7)",
+            },
+            "SUNSET": {
+                name: "Sunset",
+                color: "#D3AC5D",
+            },
+            "CIVIL_TWILIGHT_END": {
+                name: "Civil Twilight End",
+                color: "#668BDB",
+            },
+            "NAUTICAL_TWILIGHT_END": {
+                name: "Nautical Twilight End",
+                color: "#3C4C87",
+            },
+            "ASTRONOMICAL_TWILIGHT_END": {
+                name: "Astronomical Twilight End",
+                color: "#2E3959",
+            }
+        }
+
+        for (const ephemeris in ephemerisDict) {
+            const row = document.createElement("tr");
+            const td = document.createElement("td");
+            td.textContent = ephemerisDict[ephemeris].name;
+            td.style.textAlign = "left";
+            row.appendChild(td);
+            for (let i = 0; i <= 0; i++) {
+                const referenceDate = new Date();
+                referenceDate.setDate(initialDate.getDate() + i);
+                const td = document.createElement("td");
+                td.textContent = formatLocalTime(
+                    astronomyJS.getEphemerisDateForObject("Sun", referenceDate, ephemeris)
+                );
+                row.appendChild(td);
+            }
+            tbody.appendChild(row);
+        }
+
+        document.getElementById(htmlElementId).appendChild(table);
+    }
+
     function drawHourlyWeatherTable(htmlElementId, hourly) {
         const table = document.createElement("table");
         table.classList.add("padless");
@@ -116,7 +201,7 @@
 
         const tbody = table.querySelector("tbody");
 
-        function formatTime(unix) {
+        function formatDateTime(unix) {
             const date = new Date(unix * 1000);
             return date.toLocaleString("sv-SE", {weekday: 'short', hour: "2-digit", minute: "2-digit", hour12: false});
         }
@@ -125,7 +210,7 @@
             const cloudCover = hour.cloudCover;
             const row = document.createElement("tr");
             row.innerHTML = `
-    <td class="${getSunAltitudeClass(hour.sunAltitude)}">${formatTime(hour.timestamp)}</td>
+    <td class="${getSunAltitudeClass(hour.sunAltitude)}">${formatDateTime(hour.timestamp)}</td>
     <td>${hour.temperature.toFixed(1)}</td>
     <td>${hour.humidity}</td>
     <td style="background-color: ${hour.windSpeed < 5.5 ? '' : hour.windSpeed > 10.7 ? 'rgba(100, 0, 0, 50)' : 'rgba(100, 100, 0, 50)'}">${hour.windSpeed.toFixed(1)} ${drawSvgArrow(hour.windDirection)}</td>
@@ -249,7 +334,7 @@
                     <svg id="cloudCoverageGraph" width="400" height="200"></svg>
                 </div>
             </article>
-</div>
+        </div>
         <div>
             <article>
                 <header>Astronomy</header>
@@ -282,6 +367,11 @@
         <article>
             <header>Rio de Janeiro</header>
             <div class="center-content" id="drawSunAltitudePathRio"></div>
+        </article>
+
+        <article>
+            <header>Sun</header>
+            <div class="center-content" id="sunEphemerisTable"></div>
         </article>
     </div>
 </div>

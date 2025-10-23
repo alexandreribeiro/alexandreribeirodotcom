@@ -111,6 +111,7 @@ function fetchDashboardData(astronomyJS) {
             }
             drawWindGauge('#windDirectionGauge', windDirection, essaWindSpeedInMetersPerSecond);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
+            drawSunEphemerisTable('sunEphemerisTable', astronomyJS);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
             drawAstronomicalClock('#astronomicalClock', sunEphemeris);
         })
