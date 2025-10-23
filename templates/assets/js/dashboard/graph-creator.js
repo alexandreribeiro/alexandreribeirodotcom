@@ -6,6 +6,7 @@ function drawRainGraph(svgSelectorId, startDate, rainValues) {
     }));
 
     const svg = d3.select(svgSelectorId);
+    svg.selectAll("*").remove();
     const margin = {top: 20, right: 20, bottom: 20, left: 45};
     const width = 400 - margin.left - margin.right;
     const height = 200 - margin.top - margin.bottom;
@@ -58,6 +59,7 @@ function drawCloudCoverageGraph(svgSelector, dataDict) {
     const height = 200;
     const margin = {top: 20, right: 20, bottom: 50, left: 35};
     const svg = d3.select(svgSelector).attr("width", width).attr("height", height);
+    svg.selectAll("*").remove();
 
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
@@ -128,6 +130,7 @@ function drawCloudCoverageGraph(svgSelector, dataDict) {
 
 function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
     const svg = d3.select(svgSelector);
+    svg.selectAll("*").remove();
     const width = +svg.attr("width");
     const height = +svg.attr("height");
     const radius = Math.min(width, height) / 2 - 20;
@@ -256,6 +259,7 @@ function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
 
 function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
     const svg = d3.select(svgItemSelector);
+    svg.selectAll("*").remove();
     const width = +svg.attr("width");
     const height = +svg.attr("height");
     const radius = Math.min(width, height) / 2;
@@ -326,6 +330,7 @@ function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
 function drawAstronomicalClock(svgSelector, sunEphemeris) {
     const referenceTime = new Date();
     const svg = d3.select(svgSelector);
+    svg.selectAll("*").remove();
     const width = +svg.attr("width");
     const height = +svg.attr("height");
     const radius = Math.min(width, height) / 3;

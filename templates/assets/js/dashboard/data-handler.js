@@ -16,20 +16,6 @@ function fetchDashboardData(astronomyJS) {
             let lastUpdatedOfficeTemperature = new Date(data['homeAssistant']['officeTemperature']['lastUpdated']);
             let lastUpdatedBedroomTemperature = new Date(data['homeAssistant']['bedroomTemperature']['lastUpdated']);
             let lastUpdatedOtherBedroomTemperature = new Date(data['homeAssistant']['otherBedroomTemperature']['lastUpdated']);
-            const sunEphemeris = {
-                "rise": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "RISE"),
-                "set": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SET"),
-                "goldenHourStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_START"),
-                "goldenHourEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_END"),
-                "civilTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_START"),
-                "civilTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_END"),
-                "nauticalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_START"),
-                "nauticalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_END"),
-                "astronomicalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_START"),
-                "astronomicalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_END"),
-                "solarTransit": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "TRANSIT"),
-                "lowerSolarTransit": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "LOWER_TRANSIT"),
-            }
 
             document.getElementById('outdoorsPressureOutdated').textContent =
                 (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsPressure) > tenMinutesInMilliseconds) ? `⏳` : ``;
@@ -98,7 +84,6 @@ function fetchDashboardData(astronomyJS) {
                 ${data['homeAssistant']['otherBedroomHumidity']['unit']}`;
             drawSVGGauge('#atmosphericPressureGauge', data['homeAssistant']['atmosphericPressure']['value'],
                 data['homeAssistant']['atmosphericPressure']['unit']);
-            updateAllTilesWithTime(new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']))
             drawRainGraph('#rainGraph', new Date(data['weather']['nextHour']['startDate']), data['weather']['nextHour']['values']);
             let essaWindSpeedInMetersPerSecond, windDirection;
             try {
@@ -111,9 +96,8 @@ function fetchDashboardData(astronomyJS) {
             }
             drawWindGauge('#windDirectionGauge', windDirection, essaWindSpeedInMetersPerSecond);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
-            drawSunEphemerisTable('sunEphemerisTable', astronomyJS);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
-            drawAstronomicalClock('#astronomicalClock', sunEphemeris);
+            drawSunEphemerisTable('sunEphemerisTable', astronomyJS);
         })
         .catch(error => {
             console.error("Error fetching Gist:", error);
@@ -121,3 +105,38 @@ function fetchDashboardData(astronomyJS) {
         });
 }
 
+function getSunEphemeris(astronomyJS) {
+    return {
+        "rise": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "RISE"),
+        "set": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SET"),
+        "goldenHourStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_START"),
+        "goldenHourEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_END"),
+        "civilTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_START"),
+        "civilTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_END"),
+        "nauticalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_START"),
+        "nauticalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "NAUTICAL_TWILIGHT_END"),
+        "astronomicalTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_START"),
+        "astronomicalTwilightEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "ASTRONOMICAL_TWILIGHT_END"),
+        "solarTransit": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "TRANSIT"),
+        "lowerSolarTransit": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "LOWER_TRANSIT"),
+    }
+}
+
+function updateAllTilesWithTime(sunEphemeris, referenceDate) {
+    astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
+    astronomySVG.setTimezone("Europe/Stockholm");
+    astronomySVG.setDate(referenceDate);
+
+    document.getElementById('drawPlanetMercuryVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mercury", 100);
+    document.getElementById('drawPlanetVenusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Venus", 100);
+    document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
+    document.getElementById('drawPlanetJupiterVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Jupiter", 100);
+    document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
+    document.getElementById('drawSunAzimuth').innerHTML = astronomySVG.drawAzimuth("Sun", 100);
+    document.getElementById('drawSunAltitude').innerHTML = astronomySVG.drawAltitude("Sun", 100);
+    document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+    drawAstronomicalClock('#astronomicalClock', sunEphemeris);
+    astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
+    astronomySVG.setTimezone('America/Sao_Paulo');
+    document.getElementById('drawSunAltitudePathRio').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
+}

@@ -63,6 +63,9 @@
     let astronomySVG = AstronomySVG.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
     let astronomyJS = AstronomyJS.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
     fetchDashboardData(astronomyJS);
+    updateAllTilesWithTime(getSunEphemeris(astronomyJS), new Date());
+    setInterval(() => updateAllTilesWithTime(getSunEphemeris(astronomyJS), new Date()), 60_000);
+    setInterval(() => fetchDashboardData(astronomyJS), 60_000 * 5);
 
     function parseWindDirection(metar) {
         const windRegex = /\b(\d{3}|VRB)(\d{2,3})(G\d{2,3})?KT\b/;
@@ -174,7 +177,7 @@
             tbody.appendChild(row);
         }
 
-        document.getElementById(htmlElementId).appendChild(table);
+        document.getElementById(htmlElementId).replaceChildren(table);
     }
 
     function drawHourlyWeatherTable(htmlElementId, hourly) {
@@ -222,29 +225,8 @@
   `;
             tbody.appendChild(row);
         });
-        document.getElementById(htmlElementId).appendChild(table);
+        document.getElementById(htmlElementId).replaceChildren(table);
     }
-
-    function updateAllTilesWithTime(referenceDate) {
-        astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
-        astronomySVG.setTimezone("Europe/Stockholm");
-        astronomySVG.setDate(referenceDate);
-
-        document.getElementById('drawPlanetMercuryVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mercury", 100);
-        document.getElementById('drawPlanetVenusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Venus", 100);
-        document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
-        document.getElementById('drawPlanetJupiterVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Jupiter", 100);
-        document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
-        document.getElementById('drawSunAzimuth').innerHTML = astronomySVG.drawAzimuth("Sun", 100);
-        document.getElementById('drawSunAltitude').innerHTML = astronomySVG.drawAltitude("Sun", 100);
-        document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
-
-        astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
-        astronomySVG.setTimezone('America/Sao_Paulo');
-        document.getElementById('drawSunAltitudePathRio').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
-    }
-
-    updateAllTilesWithTime(new Date());
 </script>
 {% endblock %}
 
