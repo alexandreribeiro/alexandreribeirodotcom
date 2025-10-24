@@ -98,6 +98,7 @@
     function drawSunEphemerisTable(htmlElementId, astronomyJS, initialDate) {
         document.getElementById(htmlElementId).innerHTML = '';
         function formatLocalTime(referenceDate) {
+            if (referenceDate === null) return "-";
             return new Intl.DateTimeFormat("sv-SE", {
                 hour: '2-digit',
                 minute: '2-digit',
