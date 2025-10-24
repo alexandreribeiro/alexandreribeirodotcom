@@ -95,7 +95,8 @@
         }
     }
 
-    function drawSunEphemerisTable(htmlElementId, astronomyJS) {
+    function drawSunEphemerisTable(htmlElementId, astronomyJS, initialDate) {
+        document.getElementById(htmlElementId).innerHTML = '';
         function formatLocalTime(referenceDate) {
             return new Intl.DateTimeFormat("sv-SE", {
                 hour: '2-digit',
@@ -118,7 +119,6 @@
   <tbody></tbody>
 `;
         const tbody = table.querySelector("tbody");
-        let initialDate = new Date();
 
         const ephemerisDict = {
             "ASTRONOMICAL_TWILIGHT_START": {
@@ -161,19 +161,15 @@
 
         for (const ephemeris in ephemerisDict) {
             const row = document.createElement("tr");
-            const td = document.createElement("td");
+            let td = document.createElement("td");
             td.textContent = ephemerisDict[ephemeris].name;
             td.style.textAlign = "left";
             row.appendChild(td);
-            for (let i = 0; i <= 0; i++) {
-                const referenceDate = new Date();
-                referenceDate.setDate(initialDate.getDate() + i);
-                const td = document.createElement("td");
-                td.textContent = formatLocalTime(
-                    astronomyJS.getEphemerisDateForObject("Sun", referenceDate, ephemeris)
-                );
-                row.appendChild(td);
-            }
+            td = document.createElement("td");
+            td.textContent = formatLocalTime(
+                astronomyJS.getEphemerisDateForObject("Sun", initialDate, ephemeris)
+            );
+            row.appendChild(td);
             tbody.appendChild(row);
         }
 
@@ -227,6 +223,18 @@
         });
         document.getElementById(htmlElementId).replaceChildren(table);
     }
+
+    const now = new Date();
+    drawSunEphemerisTable('sunEphemerisTable', astronomyJS, now);
+    const datePicker = document.getElementById('datePicker');
+    datePicker.value = now.toISOString().slice(0, 10);
+    datePicker.addEventListener('input', () => {
+        const selectedDate = new Date(datePicker.value);
+        if (!isNaN(selectedDate.getTime())) {
+            drawSunEphemerisTable('sunEphemerisTable', astronomyJS, selectedDate);
+        }
+    });
+
 </script>
 {% endblock %}
 
@@ -353,6 +361,10 @@
 
         <article>
             <header>Sun</header>
+            <div>
+                <label for="datePicker">Date</label>
+                <input type="date" id="datePicker"/>
+            </div>
             <div class="center-content" id="sunEphemerisTable"></div>
         </article>
     </div>

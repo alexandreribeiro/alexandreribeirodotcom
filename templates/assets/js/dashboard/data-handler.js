@@ -97,7 +97,6 @@ function fetchDashboardData(astronomyJS) {
             drawWindGauge('#windDirectionGauge', windDirection, essaWindSpeedInMetersPerSecond);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
-            drawSunEphemerisTable('sunEphemerisTable', astronomyJS);
         })
         .catch(error => {
             console.error("Error fetching Gist:", error);
