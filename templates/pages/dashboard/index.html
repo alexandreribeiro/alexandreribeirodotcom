@@ -124,19 +124,19 @@
         const ephemerisDict = {
             "ASTRONOMICAL_TWILIGHT_START": {
                 name: "Astronomical Twilight Start",
-                color: "#2E3959",
+                color: "rgba(0, 35, 70, 1)",
             },
             "NAUTICAL_TWILIGHT_START": {
                 name: "Nautical Twilight Start",
-                color: "#3C4C87",
+                color: "rgba(0, 51, 102, 1)",
             },
             "CIVIL_TWILIGHT_START": {
                 name: "Civil Twilight Start",
-                color: "#668BDB",
+                color: "rgba(0, 90, 180, 0.7)",
             },
             "SUNRISE": {
                 name: "Sunrise",
-                color: "#D3AC5D",
+                color: "rgba(255, 200, 0, 0.7)",
             },
             "TRANSIT": {
                 name: "Transit",
@@ -144,19 +144,19 @@
             },
             "SUNSET": {
                 name: "Sunset",
-                color: "#D3AC5D",
+                color: "rgba(255, 200, 0, 0.7)",
             },
             "CIVIL_TWILIGHT_END": {
                 name: "Civil Twilight End",
-                color: "#668BDB",
+                color: "rgba(0, 90, 180, 0.7)",
             },
             "NAUTICAL_TWILIGHT_END": {
                 name: "Nautical Twilight End",
-                color: "#3C4C87",
+                color: "rgba(0, 51, 102, 1)",
             },
             "ASTRONOMICAL_TWILIGHT_END": {
                 name: "Astronomical Twilight End",
-                color: "#2E3959",
+                color: "rgba(0, 35, 70, 1)",
             }
         }
 
@@ -170,6 +170,7 @@
             td.textContent = formatLocalTime(
                 astronomyJS.getEphemerisDateForObject("Sun", initialDate, ephemeris)
             );
+            td.style.background = ephemerisDict[ephemeris].color;
             row.appendChild(td);
             tbody.appendChild(row);
         }
@@ -376,7 +377,6 @@
         </article>
     </div>
 </div>
-
 
 <article>
     <header>Weather</header>
