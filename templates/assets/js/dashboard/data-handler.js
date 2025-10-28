@@ -106,8 +106,8 @@ function fetchDashboardData(astronomyJS) {
 
 function getSunEphemeris(astronomyJS) {
     return {
-        "rise": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "RISE"),
-        "set": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SET"),
+        "sunrise": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SUNRISE"),
+        "sunset": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "SUNSET"),
         "goldenHourStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_START"),
         "goldenHourEnd": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "GOLDEN_HOUR_END"),
         "civilTwilightStart": astronomyJS.getEphemerisDateForObject("Sun", astronomyJS.getDate(), "CIVIL_TWILIGHT_START"),
