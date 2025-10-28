@@ -133,6 +133,8 @@ function updateAllTilesWithTime(sunEphemeris, referenceDate) {
     document.getElementById('drawPlanetSaturnVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Saturn", 100);
     document.getElementById('drawSunAzimuth').innerHTML = astronomySVG.drawAzimuth("Sun", 100);
     document.getElementById('drawSunAltitude').innerHTML = astronomySVG.drawAltitude("Sun", 100);
+    document.getElementById('drawPlanetsVisibility').innerHTML =
+        astronomySVG.drawMultiCelestialBodyVisibilityMap(["Sun", "Mercury", "Venus", "Mars", "Saturn", "Jupiter"], 200, 222);
     document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
     drawAstronomicalClock('#astronomicalClock', sunEphemeris);
     astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
