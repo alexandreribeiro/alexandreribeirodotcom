@@ -54,6 +54,33 @@ function drawRainGraph(svgSelectorId, startDate, rainValues) {
         .text("Rain/minute");
 }
 
+const drawFullArc = (svg, radius, outerRadius, color, center) => {
+    svg.append("path")
+        .attr("class", "arc")
+        .attr("d", d3.arc()
+            .innerRadius(radius)
+            .outerRadius(outerRadius)
+            .startAngle(0)
+            .endAngle(360 * (Math.PI / 180)))
+        .attr("fill", color)
+        .attr("transform", `translate(${center.x},${center.y})`);
+}
+
+const drawLineInArc = (svg, radius, outerRadius, color, center, angle) => {
+    const angleInRadians = (angle + 90) * Math.PI / 180;
+    const tx1 = center.x + Math.cos(angleInRadians) * (radius + (outerRadius - radius) * 0.8);
+    const ty1 = center.y + Math.sin(angleInRadians) * (radius + (outerRadius - radius) * 0.8);
+    const tx2 = center.x + Math.cos(angleInRadians) * (radius + (outerRadius - radius) * 0.2);
+    const ty2 = center.y + Math.sin(angleInRadians) * (radius + (outerRadius - radius) * 0.2);
+    svg.append("line")
+        .attr("x1", tx1)
+        .attr("y1", ty1)
+        .attr("x2", tx2)
+        .attr("y2", ty2)
+        .attr("stroke", color)
+        .attr("stroke-width", 1);
+}
+
 function drawCloudCoverageGraph(svgSelector, dataDict) {
     const width = 400;
     const height = 200;
@@ -327,7 +354,7 @@ function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
         .text(`${displayValue} ${displayUnit}`);
 }
 
-function drawAstronomicalClock(svgSelector, sunEphemeris) {
+function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, skyObjectPosition) {
     const referenceTime = new Date();
     const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
@@ -335,6 +362,8 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
     const height = +svg.attr("height");
     const radius = Math.min(width, height) / 3;
     const outerRadius = radius * 1.2;
+    const planetRadius = radius * 1.35;
+    const eclipticRadius = radius * 1.5;
     const center = {x: width / 2, y: height / 2};
 
     const defs = svg.append("defs")
@@ -506,6 +535,76 @@ function drawAstronomicalClock(svgSelector, sunEphemeris) {
         .attr("stroke", "yellow")
         .attr("stroke-linecap", "round")
         .attr("stroke-width", 2);
+
+    // Draw ecliptic radius
+    svg.append("path")
+        .attr("class", "arc")
+        .attr("d", d3.arc()
+            .innerRadius(outerRadius)
+            .outerRadius(eclipticRadius)
+            .startAngle(0)
+            .endAngle(360 * (Math.PI / 180)))
+        .attr("fill", "#121317")
+        .attr("transform", `translate(${center.x},${center.y})`);
+
+    const CONSTELLATIONS = {
+        "PIS": {"startAngle": -8.4, "endAngle": 29.1, symbol: "♓︎"},
+        "ARI": {"startAngle": 29.1, "endAngle": 53.5, symbol: "♈︎"},
+        "TAU": {"startAngle": 53.5, "endAngle": 90.4, symbol: "♉︎"},
+        "GEM": {"startAngle": 90.4, "endAngle": 118.8, symbol: "♊︎"},
+        "CAN": {"startAngle": 118.8, "endAngle": 138.2, symbol: "♋︎"},
+        "LEO": {"startAngle": 138.2, "endAngle": 174.2, symbol: "♌︎"},
+        "VIR": {"startAngle": 174.2, "endAngle": 217.8, symbol: "♍︎"},
+        "LIB": {"startAngle": 217.8, "endAngle": 241.2, symbol: "♎︎"},
+        "SCO": {"startAngle": 241.2, "endAngle": 248.1, symbol: "♏︎"},
+        "OPH": {"startAngle": 248.1, "endAngle": 266.7, symbol: "O"},
+        "SAG": {"startAngle": 266.7, "endAngle": 299.7, symbol: "♐︎"},
+        "CAP": {"startAngle": 299.7, "endAngle": 327.1, symbol: "♑︎"},
+        "AQU": {"startAngle": 327.1, "endAngle": 351.6, symbol: "♒︎"}
+    }
+
+    const drawConstellationArc = (svg, radius, outerRadius, color, center, startAngle, endAngle, label, size) => {
+        drawLineInArc(svg, radius, outerRadius, color, center, startAngle);
+        addLabelToConstellationArc(svg, radius, outerRadius, color, center, startAngle, endAngle, label, size, 0.5);
+    };
+
+    const addLabelToConstellationArc = (svg, radius, outerRadius, color, center, startAngle, endAngle, label, size, distance) => {
+        // Convert degrees to radians
+        const startRad = (startAngle + 90) * Math.PI / 180;
+        const endRad = (endAngle + 90) * Math.PI / 180;
+        const midRad = (startRad + endRad) / 2;
+
+        // Compute label position (midpoint of arc)
+        const labelRadius = (radius + (outerRadius - radius) * distance)
+        const labelX = center.x + Math.cos(midRad) * labelRadius;
+        const labelY = center.y + Math.sin(midRad) * labelRadius;
+
+        // Append text
+        svg.append("text")
+            .attr("x", labelX)
+            .attr("y", labelY)
+            .attr("fill", color)
+            .attr("font-size", size + "px")
+            .attr("font-family", "sans-serif")
+            .attr("text-anchor", "middle")
+            .attr("alignment-baseline", "middle")
+            .text(label);
+    }
+
+    drawFullArc(svg, planetRadius, eclipticRadius, "#121317", center);
+    drawFullArc(svg, outerRadius, planetRadius, "#18191E", center);
+
+    for (const [_, constellation] of Object.entries(CONSTELLATIONS)) {
+        drawConstellationArc(svg, planetRadius, eclipticRadius,
+            "white", center, localSiderealTime - constellation.startAngle,
+            localSiderealTime - constellation.endAngle, constellation.symbol, 16);
+    }
+
+    for (const [_, skyObject] of Object.entries(skyObjectPosition)) {
+        addLabelToConstellationArc(svg, outerRadius, planetRadius,
+            "yellow", center, localSiderealTime - skyObject.position,
+            localSiderealTime - skyObject.position, skyObject.symbol, 16, 0.5);
+    }
 
 }
 

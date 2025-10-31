@@ -122,6 +122,16 @@ function getSunEphemeris(astronomyJS) {
 }
 
 function updateAllTilesWithTime(sunEphemeris, referenceDate) {
+    astronomyJS.setDate(referenceDate);
+    const skyObjectPosition = {
+        "Sun": {"position": astronomyJS.getRADecCoordinatesForObject("Sun").longitude, symbol: "☉"},
+        "Mercury": {"position": astronomyJS.getRADecCoordinatesForObject("Mercury").longitude, symbol: "☿"},
+        "Venus": {"position": astronomyJS.getRADecCoordinatesForObject("Venus").longitude, symbol: "♀"},
+        "Mars": {"position": astronomyJS.getRADecCoordinatesForObject("Mars").longitude, symbol: "♂"},
+        "Jupiter": {"position": astronomyJS.getRADecCoordinatesForObject("Jupiter").longitude, symbol: "♃"},
+        "Saturn": {"position": astronomyJS.getRADecCoordinatesForObject("Saturn").longitude, symbol: "♄"},
+    }
+
     astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
     astronomySVG.setTimezone("Europe/Stockholm");
     astronomySVG.setDate(referenceDate);
@@ -136,7 +146,8 @@ function updateAllTilesWithTime(sunEphemeris, referenceDate) {
     document.getElementById('drawPlanetsVisibility').innerHTML =
         astronomySVG.drawMultiCelestialBodyVisibilityMap(["Sun", "Mercury", "Venus", "Mars", "Saturn", "Jupiter"], 200, 222);
     document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
-    drawAstronomicalClock('#astronomicalClock', sunEphemeris);
+    drawAstronomicalClock('#astronomicalClock', sunEphemeris, astronomyJS.getLocalSiderealTime() - 222, skyObjectPosition);
+
     astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
     astronomySVG.setTimezone('America/Sao_Paulo');
     document.getElementById('drawSunAltitudePathRio').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
