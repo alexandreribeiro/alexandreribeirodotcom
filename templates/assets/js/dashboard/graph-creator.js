@@ -377,14 +377,14 @@ function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
         .text(`${displayValue} ${displayUnit}`);
 }
 
-function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, skyObjectPosition) {
+function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, skyObjectPosition, eclipticRotation) {
     const referenceTime = new Date();
     const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
     const width = +svg.attr("width");
     const height = +svg.attr("height");
     const radius = Math.min(width, height) / 3;
-    const outerRadius = radius * 1.2;
+    const hourRadius = radius * 1.2;
     const planetRadius = radius * 1.35;
     const eclipticRadius = radius * 1.5;
     const center = {x: width / 2, y: height / 2};
@@ -478,24 +478,24 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
 
     // An arc will be created
     //svg, radius, outerRadius, color, center, startAngle, endAngle
-    drawSunAltitudeArc(svg, radius, outerRadius, "#BBCAEB", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#1E1F24", center, -180 * (Math.PI / 180), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#1E1F24", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]), 180 * (Math.PI / 180));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["sunrise"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["sunset"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["goldenHourEnd"]));
-    drawSunAltitudeArc(svg, radius, outerRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["goldenHourStart"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#BBCAEB", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#1E1F24", center, -180 * (Math.PI / 180), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#1E1F24", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]), 180 * (Math.PI / 180));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["sunrise"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["sunset"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["goldenHourEnd"]));
+    drawSunAltitudeArc(svg, radius, hourRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["goldenHourStart"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
 
     d3.range(0, 360, 7.5).forEach(angleInDegrees => {
         const angle = scale(angleInDegrees);
-        const x1 = Math.cos(angle) * (outerRadius) + center.x;
-        const y1 = Math.sin(angle) * (outerRadius) + center.y;
-        const x2 = Math.cos(angle) * (outerRadius * 0.97) + center.x;
-        const y2 = Math.sin(angle) * (outerRadius * 0.97) + center.y;
+        const x1 = Math.cos(angle) * (hourRadius) + center.x;
+        const y1 = Math.sin(angle) * (hourRadius) + center.y;
+        const x2 = Math.cos(angle) * (hourRadius * 0.97) + center.x;
+        const y2 = Math.sin(angle) * (hourRadius * 0.97) + center.y;
 
         svg.append("line")
             .attr("x1", x1).attr("y1", y1)
@@ -534,10 +534,10 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
     const drawTransitLine = (dateObj) => {
         if (!dateObj || typeof dateObj.getHours !== 'function') return;
         const angle = (((dateObj.getHours() * 60 + dateObj.getMinutes()) / 4) + 90) * (Math.PI / 180);
-        const tx1 = center.x + Math.cos(angle) * (outerRadius);
-        const ty1 = center.y + Math.sin(angle) * (outerRadius);
-        const tx2 = center.x + Math.cos(angle) * (outerRadius * 0.94);
-        const ty2 = center.y + Math.sin(angle) * (outerRadius * 0.94);
+        const tx1 = center.x + Math.cos(angle) * (hourRadius);
+        const ty1 = center.y + Math.sin(angle) * (hourRadius);
+        const tx2 = center.x + Math.cos(angle) * (hourRadius * 0.94);
+        const ty2 = center.y + Math.sin(angle) * (hourRadius * 0.94);
         svg.append("line")
             .attr("x1", tx1)
             .attr("y1", ty1)
@@ -563,7 +563,7 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
     svg.append("path")
         .attr("class", "arc")
         .attr("d", d3.arc()
-            .innerRadius(outerRadius)
+            .innerRadius(hourRadius)
             .outerRadius(eclipticRadius)
             .startAngle(0)
             .endAngle(360 * (Math.PI / 180)))
@@ -599,7 +599,10 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
     };
 
     drawFullArc(svg, planetRadius, eclipticRadius, "#121317", center);
-    drawFullArc(svg, outerRadius, planetRadius, "#18191E", center);
+    drawFullArc(svg, hourRadius, planetRadius, "#18191E", center);
+
+    drawLineInArc(svg, planetRadius, eclipticRadius, "green", center, localSiderealTime, 8);
+    localSiderealTime = localSiderealTime - eclipticRotation
 
     for (const [_, angle] of Object.entries(SEASONS)) {
         drawLineInArc(svg, planetRadius, eclipticRadius, "orange", center, localSiderealTime - angle, 3);
@@ -612,7 +615,7 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
     }
 
     for (const [_, skyObject] of Object.entries(skyObjectPosition)) {
-        addLabelToConstellationArc(svg, outerRadius, planetRadius,
+        addLabelToConstellationArc(svg, hourRadius, planetRadius,
             "yellow", center, localSiderealTime - skyObject.position,
             localSiderealTime - skyObject.position, skyObject.symbol, 16, 0.5);
     }
