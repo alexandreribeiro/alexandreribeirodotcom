@@ -66,7 +66,7 @@ const drawFullArc = (svg, radius, outerRadius, color, center) => {
         .attr("transform", `translate(${center.x},${center.y})`);
 }
 
-const drawLineInArc = (svg, radius, outerRadius, color, center, angle) => {
+const drawLineInArc = (svg, radius, outerRadius, color, center, angle, strokeWidth) => {
     const angleInRadians = (angle + 90) * Math.PI / 180;
     const tx1 = center.x + Math.cos(angleInRadians) * (radius + (outerRadius - radius) * 0.8);
     const ty1 = center.y + Math.sin(angleInRadians) * (radius + (outerRadius - radius) * 0.8);
@@ -78,7 +78,7 @@ const drawLineInArc = (svg, radius, outerRadius, color, center, angle) => {
         .attr("x2", tx2)
         .attr("y2", ty2)
         .attr("stroke", color)
-        .attr("stroke-width", 1);
+        .attr("stroke-width", strokeWidth);
 }
 
 function drawCloudCoverageGraph(svgSelector, dataDict) {
@@ -282,6 +282,29 @@ function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
         .attr("fill", "#aaa");
 
     drawCompass();
+}
+
+const addLabelToConstellationArc = (svg, radius, outerRadius, color, center, startAngle, endAngle, label, size, distance) => {
+    // Convert degrees to radians
+    const startRad = (startAngle + 90) * Math.PI / 180;
+    const endRad = (endAngle + 90) * Math.PI / 180;
+    const midRad = (startRad + endRad) / 2;
+
+    // Compute label position (midpoint of arc)
+    const labelRadius = (radius + (outerRadius - radius) * distance)
+    const labelX = center.x + Math.cos(midRad) * labelRadius;
+    const labelY = center.y + Math.sin(midRad) * labelRadius;
+
+    // Append text
+    svg.append("text")
+        .attr("x", labelX)
+        .attr("y", labelY)
+        .attr("fill", color)
+        .attr("font-size", size + "px")
+        .attr("font-family", "sans-serif")
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .text(label);
 }
 
 function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
@@ -563,36 +586,24 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
         "AQU": {"startAngle": 327.1, "endAngle": 351.6, symbol: "♒︎"}
     }
 
+    const SEASONS = {
+        "March": 0,
+        "June": 90,
+        "September": 180,
+        "December": 270
+    }
+
     const drawConstellationArc = (svg, radius, outerRadius, color, center, startAngle, endAngle, label, size) => {
-        drawLineInArc(svg, radius, outerRadius, color, center, startAngle);
+        drawLineInArc(svg, radius, outerRadius, color, center, startAngle, 1);
         addLabelToConstellationArc(svg, radius, outerRadius, color, center, startAngle, endAngle, label, size, 0.5);
     };
 
-    const addLabelToConstellationArc = (svg, radius, outerRadius, color, center, startAngle, endAngle, label, size, distance) => {
-        // Convert degrees to radians
-        const startRad = (startAngle + 90) * Math.PI / 180;
-        const endRad = (endAngle + 90) * Math.PI / 180;
-        const midRad = (startRad + endRad) / 2;
-
-        // Compute label position (midpoint of arc)
-        const labelRadius = (radius + (outerRadius - radius) * distance)
-        const labelX = center.x + Math.cos(midRad) * labelRadius;
-        const labelY = center.y + Math.sin(midRad) * labelRadius;
-
-        // Append text
-        svg.append("text")
-            .attr("x", labelX)
-            .attr("y", labelY)
-            .attr("fill", color)
-            .attr("font-size", size + "px")
-            .attr("font-family", "sans-serif")
-            .attr("text-anchor", "middle")
-            .attr("alignment-baseline", "middle")
-            .text(label);
-    }
-
     drawFullArc(svg, planetRadius, eclipticRadius, "#121317", center);
     drawFullArc(svg, outerRadius, planetRadius, "#18191E", center);
+
+    for (const [_, angle] of Object.entries(SEASONS)) {
+        drawLineInArc(svg, planetRadius, eclipticRadius, "orange", center, localSiderealTime - angle, 3);
+    }
 
     for (const [_, constellation] of Object.entries(CONSTELLATIONS)) {
         drawConstellationArc(svg, planetRadius, eclipticRadius,
