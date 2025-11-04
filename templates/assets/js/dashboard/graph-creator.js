@@ -601,7 +601,7 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
     drawFullArc(svg, planetRadius, eclipticRadius, "#121317", center);
     drawFullArc(svg, hourRadius, planetRadius, "#18191E", center);
 
-    drawLineInArc(svg, planetRadius, eclipticRadius, "green", center, localSiderealTime, 8);
+    drawLineInArc(svg, planetRadius, eclipticRadius, "green", center, -eclipticRotation, 8);
     localSiderealTime = localSiderealTime - eclipticRotation
 
     for (const [_, angle] of Object.entries(SEASONS)) {
