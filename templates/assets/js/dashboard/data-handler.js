@@ -8,7 +8,8 @@ function fetchDashboardData(astronomyJS) {
                 it.sunAltitude = astronomyJS.getAltAzCoordinatesForObject('Sun', parsedDate).latitude;
             });
 
-            const tenMinutesInMilliseconds = 60 * 1000 * 15;
+            const fifteenMinutesInMilliseconds = 60 * 1000 * 15;
+            const oneDayInMilliseconds = 60 * 1000 * 60 * 24;
             let lastUpdatedDate = new Date(data['lastUpdated']);
             let lastUpdatedOutdoorsPressure = new Date(data['homeAssistant']['atmosphericPressure']['lastUpdated']);
             let lastUpdatedOutdoorsTemperature = new Date(data['homeAssistant']['outdoorsTemperature']['lastUpdated']);
@@ -18,17 +19,23 @@ function fetchDashboardData(astronomyJS) {
             let lastUpdatedOtherBedroomTemperature = new Date(data['homeAssistant']['otherBedroomTemperature']['lastUpdated']);
 
             document.getElementById('outdoorsPressureOutdated').textContent =
-                (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsPressure) > tenMinutesInMilliseconds) ? `⏳` : ``;
+                (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsPressure) > oneDayInMilliseconds) ? `⏳⏳` :
+                    (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsPressure) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
             document.getElementById('outdoorsOutdated').textContent =
-                (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+                (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
+                    (Math.abs(lastUpdatedDate - lastUpdatedOutdoorsTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
             document.getElementById('balconyOutdated').textContent =
-                (Math.abs(lastUpdatedDate - lastUpdatedBalconyTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+                (Math.abs(lastUpdatedDate - lastUpdatedBalconyTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
+                    (Math.abs(lastUpdatedDate - lastUpdatedBalconyTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
             document.getElementById('officeOutdated').textContent =
-                (Math.abs(lastUpdatedDate - lastUpdatedOfficeTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+                (Math.abs(lastUpdatedDate - lastUpdatedOfficeTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
+                    (Math.abs(lastUpdatedDate - lastUpdatedOfficeTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
             document.getElementById('otherBedroomOutdated').textContent =
-                (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+                (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
+                    (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > fifteenMinutesInMilliseconds) ? `⏳⏳` : ``;
             document.getElementById('bedroomOutdated').textContent =
-                (Math.abs(lastUpdatedDate - lastUpdatedBedroomTemperature) > tenMinutesInMilliseconds) ? `⏳` : ``;
+                (Math.abs(lastUpdatedDate - lastUpdatedBedroomTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
+                    (Math.abs(lastUpdatedDate - lastUpdatedBedroomTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
 
             document.getElementById('lastUpdated').textContent =
                 `Last updated: ${lastUpdatedDate.toLocaleString('sv-SE')}`;
