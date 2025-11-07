@@ -32,7 +32,7 @@ function fetchDashboardData(astronomyJS) {
                     (Math.abs(lastUpdatedDate - lastUpdatedOfficeTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
             document.getElementById('otherBedroomOutdated').textContent =
                 (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
-                    (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > fifteenMinutesInMilliseconds) ? `⏳⏳` : ``;
+                    (Math.abs(lastUpdatedDate - lastUpdatedOtherBedroomTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
             document.getElementById('bedroomOutdated').textContent =
                 (Math.abs(lastUpdatedDate - lastUpdatedBedroomTemperature) > oneDayInMilliseconds) ? `⏳⏳` :
                     (Math.abs(lastUpdatedDate - lastUpdatedBedroomTemperature) > fifteenMinutesInMilliseconds) ? `⏳` : ``;
