@@ -5,7 +5,7 @@ function fetchDashboardData(astronomyJS) {
             Object.entries(data['weather']['hourly']).forEach(([_, it]) => {
                 let parsedDate = new Date(it['timestamp'] * 1000);
                 it.parsedDate = parsedDate;
-                it.sunAltitude = astronomyJS.getAltAzCoordinatesForObject('Sun', parsedDate).latitude;
+                it.sunAltitude = astronomyJS.getAltitudeAzimuthCoordinatesForObject('Sun', parsedDate).altitude;
             });
 
             const fifteenMinutesInMilliseconds = 60 * 1000 * 15;
@@ -131,18 +131,19 @@ function getSunEphemeris(astronomyJS) {
 function updateAllTilesWithTime(sunEphemeris, referenceDate) {
     astronomyJS.setDate(referenceDate);
     const skyObjectPosition = {
-        "Sun": {"position": astronomyJS.getRADecCoordinatesForObject("Sun").longitude, symbol: "☉"},
-        "Mercury": {"position": astronomyJS.getRADecCoordinatesForObject("Mercury").longitude, symbol: "☿"},
-        "Venus": {"position": astronomyJS.getRADecCoordinatesForObject("Venus").longitude, symbol: "♀"},
-        "Mars": {"position": astronomyJS.getRADecCoordinatesForObject("Mars").longitude, symbol: "♂"},
-        "Jupiter": {"position": astronomyJS.getRADecCoordinatesForObject("Jupiter").longitude, symbol: "♃"},
-        "Saturn": {"position": astronomyJS.getRADecCoordinatesForObject("Saturn").longitude, symbol: "♄"},
+        "Sun": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Sun").rightAscension, symbol: "☉"},
+        "Moon": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Moon").rightAscension, symbol: "☾"},
+        "Mercury": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Mercury").rightAscension, symbol: "☿"},
+        "Venus": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Venus").rightAscension, symbol: "♀"},
+        "Mars": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Mars").rightAscension, symbol: "♂"},
+        "Jupiter": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Jupiter").rightAscension, symbol: "♃"},
+        "Saturn": {"position": astronomyJS.getRightAscensionDeclinationCoordinatesForObject("Saturn").rightAscension, symbol: "♄"},
     }
-
     astronomySVG.setLocation(stockholmLocation.latitude, stockholmLocation.longitude);
     astronomySVG.setTimezone("Europe/Stockholm");
     astronomySVG.setDate(referenceDate);
 
+    document.getElementById('drawMoonVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Moon", 100);
     document.getElementById('drawPlanetMercuryVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mercury", 100);
     document.getElementById('drawPlanetVenusVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Venus", 100);
     document.getElementById('drawPlanetMarsVisibility').innerHTML = astronomySVG.drawCelestialBodyVisibility("Mars", 100);
@@ -151,9 +152,9 @@ function updateAllTilesWithTime(sunEphemeris, referenceDate) {
     document.getElementById('drawSunAzimuth').innerHTML = astronomySVG.drawAzimuth("Sun", 100);
     document.getElementById('drawSunAltitude').innerHTML = astronomySVG.drawAltitude("Sun", 100);
     document.getElementById('drawPlanetsVisibility').innerHTML =
-        astronomySVG.drawMultiCelestialBodyVisibilityMap(["Sun", "Mercury", "Venus", "Mars", "Saturn", "Jupiter"], 200, 222);
+        astronomySVG.drawMultiCelestialBodyVisibilityMap(["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn", "Jupiter"], 200, 222);
     document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
-    drawAstronomicalClock('#astronomicalClock', sunEphemeris, astronomyJS.getLocalSiderealTime(), skyObjectPosition, 222);
+    drawAstronomicalClock('#astronomicalClock', sunEphemeris, astronomyJS.getLocalMeanSiderealTime(), skyObjectPosition, 222);
 
     astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
     astronomySVG.setTimezone('America/Sao_Paulo');

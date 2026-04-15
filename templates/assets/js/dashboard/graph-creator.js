@@ -377,7 +377,7 @@ function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
         .text(`${displayValue} ${displayUnit}`);
 }
 
-function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, skyObjectPosition, eclipticRotation) {
+function drawAstronomicalClock(svgSelector, sunEphemeris, localMeanSiderealTime, skyObjectPosition, eclipticRotation) {
     const referenceTime = new Date();
     const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
@@ -602,22 +602,22 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localSiderealTime, sky
     drawFullArc(svg, hourRadius, planetRadius, "#18191E", center);
 
     drawLineInArc(svg, planetRadius, eclipticRadius, "green", center, -eclipticRotation, 8);
-    localSiderealTime = localSiderealTime - eclipticRotation
+    localMeanSiderealTime = localMeanSiderealTime - eclipticRotation
 
     for (const [_, angle] of Object.entries(SEASONS)) {
-        drawLineInArc(svg, planetRadius, eclipticRadius, "orange", center, localSiderealTime - angle, 3);
+        drawLineInArc(svg, planetRadius, eclipticRadius, "orange", center, localMeanSiderealTime - angle, 3);
     }
 
     for (const [_, constellation] of Object.entries(CONSTELLATIONS)) {
         drawConstellationArc(svg, planetRadius, eclipticRadius,
-            "white", center, localSiderealTime - constellation.startAngle,
-            localSiderealTime - constellation.endAngle, constellation.symbol, 16);
+            "white", center, localMeanSiderealTime - constellation.startAngle,
+            localMeanSiderealTime - constellation.endAngle, constellation.symbol, 16);
     }
 
     for (const [_, skyObject] of Object.entries(skyObjectPosition)) {
         addLabelToConstellationArc(svg, hourRadius, planetRadius,
-            "yellow", center, localSiderealTime - skyObject.position,
-            localSiderealTime - skyObject.position, skyObject.symbol, 16, 0.5);
+            "yellow", center, localMeanSiderealTime - skyObject.position,
+            localMeanSiderealTime - skyObject.position, skyObject.symbol, 16, 0.5);
     }
 
 }
