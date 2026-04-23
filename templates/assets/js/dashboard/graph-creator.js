@@ -461,7 +461,7 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localMeanSiderealTime,
         .attr("stroke-width", 6);
 
     getEphemerisAngleInRadians = (ephemeris) => {
-        return (((ephemeris.getHours() * 60 + ephemeris.getMinutes()) / 4) - 180) * (Math.PI / 180);
+        return ephemeris ? (((ephemeris.getHours() * 60 + ephemeris.getMinutes()) / 4) - 180) * (Math.PI / 180) : null;
     }
 
     drawSunAltitudeArc = (svg, radius, outerRadius, color, center, startAngle, endAngle) => {
@@ -478,17 +478,28 @@ function drawAstronomicalClock(svgSelector, sunEphemeris, localMeanSiderealTime,
 
     // An arc will be created
     //svg, radius, outerRadius, color, center, startAngle, endAngle
-    drawSunAltitudeArc(svg, radius, hourRadius, "#BBCAEB", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#1E1F24", center, -180 * (Math.PI / 180), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#1E1F24", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]), 180 * (Math.PI / 180));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["sunrise"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["sunset"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["goldenHourEnd"]));
-    drawSunAltitudeArc(svg, radius, hourRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["goldenHourStart"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
+    if (sunEphemeris["sunrise"] && sunEphemeris["sunset"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#BBCAEB", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
+    if (sunEphemeris["astronomicalTwilightStart"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#1E1F24", center, -180 * (Math.PI / 180), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]));
+    if (sunEphemeris["astronomicalTwilightEnd"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#1E1F24", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]), 180 * (Math.PI / 180));
+    if (sunEphemeris["astronomicalTwilightStart"] && sunEphemeris["nauticalTwilightStart"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]));
+    if (sunEphemeris["nauticalTwilightEnd"] && sunEphemeris["astronomicalTwilightEnd"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#2E3959", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["astronomicalTwilightEnd"]));
+    if (sunEphemeris["nauticalTwilightStart"] && sunEphemeris["civilTwilightStart"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]));
+    if (sunEphemeris["civilTwilightEnd"] && sunEphemeris["nauticalTwilightEnd"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#3C4C87", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]), getEphemerisAngleInRadians(sunEphemeris["nauticalTwilightEnd"]));
+    if (sunEphemeris["civilTwilightStart"] && sunEphemeris["sunrise"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["civilTwilightStart"]), getEphemerisAngleInRadians(sunEphemeris["sunrise"]));
+    if (sunEphemeris["sunset"] && sunEphemeris["civilTwilightEnd"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#668BDB", center, getEphemerisAngleInRadians(sunEphemeris["sunset"]), getEphemerisAngleInRadians(sunEphemeris["civilTwilightEnd"]));
+    if (sunEphemeris["sunrise"] && sunEphemeris["goldenHourEnd"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["sunrise"]), getEphemerisAngleInRadians(sunEphemeris["goldenHourEnd"]));
+    if (sunEphemeris["goldenHourStart"] && sunEphemeris["sunset"])
+        drawSunAltitudeArc(svg, radius, hourRadius, "#D3AC5D", center, getEphemerisAngleInRadians(sunEphemeris["goldenHourStart"]), getEphemerisAngleInRadians(sunEphemeris["sunset"]));
 
     d3.range(0, 360, 7.5).forEach(angleInDegrees => {
         const angle = scale(angleInDegrees);
