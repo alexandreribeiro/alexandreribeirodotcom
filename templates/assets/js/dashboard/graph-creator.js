@@ -377,8 +377,7 @@ function drawSVGGauge(svgItemSelector, displayValue, displayUnit) {
         .text(`${displayValue} ${displayUnit}`);
 }
 
-function drawAstronomicalClock(svgSelector, sunEphemeris, localMeanSiderealTime, skyObjectPosition, eclipticRotation) {
-    const referenceTime = new Date();
+function drawAstronomicalClock(svgSelector, referenceTime, sunEphemeris, localMeanSiderealTime, skyObjectPosition, eclipticRotation) {
     const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
     const width = +svg.attr("width");

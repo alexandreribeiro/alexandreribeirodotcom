@@ -52,6 +52,13 @@
         background-color: rgba(135, 206, 235, 0.7);
         color: white !important;
     }
+
+    #timeLabel {
+        width: 3rem;
+    }
+    #timeRange {
+        width: 10rem;
+    }
 </style>
 
 {% endblock %}
@@ -64,14 +71,58 @@
     let astronomyJS = AstronomyJS.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
 
     function updateDashboard(selectedDate) {
+        if (isNaN(selectedDate)) return;
         astronomyJS.setDate(selectedDate);
         const sunEphemeris = getSunEphemeris(astronomyJS);
         drawSunEphemerisTable('sunEphemerisTable', astronomyJS, selectedDate);
         updateAllTilesWithTime(sunEphemeris, selectedDate);
     }
 
-    const now = new Date();
-    updateDashboard(now);
+    const datePicker = document.getElementById('datePicker');
+    const timeRange = document.getElementById("timeRange");
+    const timeLabel = document.getElementById("timeLabel");
+    const nowButton = document.getElementById("nowButton");
+
+    function minutesToHHMM(minutes) {
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
+        return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+    }
+
+    function getMinutesSinceMidnight(referenceDate) {
+        return referenceDate.getHours() * 60 + referenceDate.getMinutes();
+    }
+
+    function updateTimeToNow() {
+        const now = new Date();
+        datePicker.value = now.toISOString().slice(0, 10);
+        const nowMinutes = getMinutesSinceMidnight(now);
+        timeRange.value = nowMinutes;
+        timeLabel.textContent = minutesToHHMM(nowMinutes);
+        updateDashboard(now);
+    }
+
+    nowButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        updateTimeToNow();
+    });
+    timeRange.addEventListener("input", () => {
+        timeLabel.value = minutesToHHMM(parseInt(timeRange.value, 10));
+        updateDashboard(getReferenceDateFromForm());
+    });
+    datePicker.addEventListener("input", () => {
+        updateDashboard(getReferenceDateFromForm());
+    });
+
+    updateTimeToNow();
+
+    function getReferenceDateFromForm() {
+        const [year, month, day] = datePicker.value.split("-").map(Number);
+        const minutes = parseInt(timeRange.value, 10);
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
+        return new Date(year, month - 1, day, hour, minute);
+    }
 
     fetchDashboardData(astronomyJS);
     setInterval(() => fetchDashboardData(astronomyJS), 60_000 * 5);
@@ -235,24 +286,7 @@
         document.getElementById(htmlElementId).replaceChildren(table);
     }
 
-    const datePicker = document.getElementById('datePicker');
-    datePicker.value = now.toISOString().slice(0, 10);
-    datePicker.addEventListener('input', () => {
-        const selectedDate = new Date(datePicker.value);
-        if (!isNaN(selectedDate.getTime())) {
-            // Set to current time if it's today, otherwise keep it at start of day or some reasonable time
-            const today = new Date();
-            if (selectedDate.toDateString() === today.toDateString()) {
-                selectedDate.setHours(today.getHours(), today.getMinutes(), today.getSeconds());
-            } else {
-                selectedDate.setHours(12, 0, 0); // Default to noon for other dates
-            }
-            updateDashboard(selectedDate);
-        }
-    });
-
     setInterval(() => {
-        const datePicker = document.getElementById('datePicker');
         const selectedDate = new Date(datePicker.value);
         const now = new Date();
         // Only auto-update if the datePicker is set to today
@@ -391,6 +425,24 @@
         </article>
 
         <article>
+            <header>Date</header>
+            <div>
+                <div role="group" style="display: flex; align-items: center; gap: 1rem;">
+                <label for="datePicker" style="display: none;">Date</label>
+                <input type="date" id="datePicker"/>
+                </div>
+            </div>
+            <div>
+                <div role="group" style="display: flex; align-items: center; gap: 1rem;">
+                    <label for="timeRange" style="display: none;">Time</label>
+                    <input type="range" id="timeRange" min="0" max="1440" value="0" step="1">
+                    <output id="timeLabel"></output>
+                    <button id="nowButton">Now</button>
+                </div>
+            </div>
+        </article>
+
+        <article>
             <header>Stockholm</header>
             <div class="center-content" id="drawSunAltitudePathStockholm"></div>
         </article>
@@ -402,10 +454,6 @@
 
         <article>
             <header>Sun</header>
-            <div>
-                <label for="datePicker">Date</label>
-                <input type="date" id="datePicker"/>
-            </div>
             <div class="center-content" id="sunEphemerisTable"></div>
         </article>
     </div>
