@@ -102,6 +102,7 @@ function fetchDashboardData(astronomyJS) {
                 windDirection = null;
             }
             drawWindGauge('#windDirectionGauge', windDirection, essaWindSpeedInMetersPerSecond);
+            drawNetatmoTable('netatmoTable', data['netatmo']);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
         })

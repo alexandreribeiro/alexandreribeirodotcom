@@ -286,6 +286,106 @@
         document.getElementById(htmlElementId).replaceChildren(table);
     }
 
+    function drawNetatmoTable(htmlElementId, stations) {
+        const container = document.getElementById(htmlElementId);
+        const table = document.createElement("table");
+        table.classList.add("padless");
+        table.classList.add("center-content");
+
+        table.innerHTML = `
+  <thead>
+    <tr>
+      <th>Temp (°C)</th>
+      <th>Humidity (%)</th>
+      <th>Pressure (hPa)</th>
+      <th>Wind (m/s)</th>
+      <th>Gust (m/s)</th>
+      <th>Rain 15m (mm)</th>
+      <th>Rain 1h (mm)</th>
+      <th>Rain 6h (mm)</th>
+      <th>Rain 24h (mm)</th>
+      <th>Raining?</th>
+      <th>Last Updated</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+`;
+
+        const tbody = table.querySelector("tbody");
+        const isAvailable = (value) =>
+            value !== null && value !== undefined && value !== "" && value !== "Not available";
+        const formatNumber = (value, fractionDigits = 1) => {
+            if (!isAvailable(value)) return "-";
+            const number = Number(value);
+            if (!Number.isFinite(number)) return String(value);
+            return number.toFixed(fractionDigits).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
+        };
+        const formatFixedNumber = (value, fractionDigits = 1) => {
+            if (!isAvailable(value)) return "-";
+            const number = Number(value);
+            if (!Number.isFinite(number)) return String(value);
+            return number.toFixed(fractionDigits);
+        };
+        const formatDateTime = (value) => {
+            const date = new Date(value);
+            if (isNaN(date)) return "-";
+            return date.toLocaleString("sv-SE", {
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            });
+        };
+        const addCell = (row, value) => {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        };
+        const addWindCell = (row, speed, direction) => {
+            const cell = document.createElement("td");
+            const formattedSpeed = formatNumber(speed);
+            cell.textContent = formattedSpeed;
+
+            const normalizedDirection = Number(direction);
+            if (formattedSpeed !== "-" && Number.isFinite(normalizedDirection) && normalizedDirection >= 0) {
+                cell.insertAdjacentHTML("beforeend", ` ${drawSvgArrow(normalizedDirection)}`);
+            }
+
+            row.appendChild(cell);
+        };
+
+        if (!Array.isArray(stations) || stations.length === 0) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 11;
+            cell.textContent = "No Netatmo data";
+            row.appendChild(cell);
+            tbody.appendChild(row);
+        } else {
+            stations.forEach((station) => {
+                const row = document.createElement("tr");
+                row.title = formatDateTime(station.last_updated);
+
+                addCell(row, formatNumber(station.temperature));
+                addCell(row, formatNumber(station.humidity, 0));
+                addCell(row, formatNumber(station.pressure));
+                addWindCell(row, station.wind_speed, station.wind_direction);
+                addWindCell(row, station.gust_speed, station.gust_direction);
+                addCell(row, formatFixedNumber(station.rain_15_minutes));
+                addCell(row, formatFixedNumber(station.rain_1_hour));
+                addCell(row, formatFixedNumber(station.rain_6_hours));
+                addCell(row, formatFixedNumber(station.rain_24_hours));
+                addCell(row, typeof station.is_raining === "boolean" ? (station.is_raining ? "Yes" : "No") : "-");
+                addCell(row, formatDateTime(station.last_updated));
+
+                tbody.appendChild(row);
+            });
+        }
+
+        container.replaceChildren(table);
+    }
+
     setInterval(() => {
         const selectedDate = new Date(datePicker.value);
         const now = new Date();
@@ -356,6 +456,11 @@
                 </tr>
                 </tbody>
             </table>
+        </article>
+
+        <article>
+            <header>Weather nearby</header>
+            <div style="overflow-x: auto;" id="netatmoTable"></div>
         </article>
 
         <div class="grid">
