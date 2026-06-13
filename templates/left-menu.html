@@ -14,11 +14,14 @@
         </ul>
         </details>
         <details {% if selected_menu in (
-        "dashboard", "world-map", "youtube-channel") %}open=""{% endif %}>
+        "dashboard", "weather", "world-map", "youtube-channel") %}open=""{% endif %}>
         <summary>Personal</summary>
         <ul>
             <li><a class="secondary" data-discover="true"
                    {% if selected_menu== "dashboard" %}aria-current="page"{% endif %} href="/dashboard">Dashboard</a>
+            </li>
+            <li><a class="secondary" data-discover="true"
+                   {% if selected_menu== "weather" %}aria-current="page"{% endif %} href="/weather">Weather</a>
             </li>
             <li><a class="secondary" data-discover="true"
                    {% if selected_menu== "world-map" %}aria-current="page"{% endif %} href="/world-map">World
