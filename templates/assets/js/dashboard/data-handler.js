@@ -156,7 +156,11 @@ function updateAllTilesWithTime(sunEphemeris, referenceDate) {
         astronomySVG.drawMultiCelestialBodyVisibilityMap(["Sun", "Moon", "Mercury", "Venus", "Mars", "Saturn", "Jupiter"], 330, 222);
     document.getElementById('drawSunAltitudePathStockholm').innerHTML = astronomySVG.drawSunAltitudePath(400, true);
     document.getElementById('drawMoonAltitudePathStockholm').innerHTML = astronomySVG.drawCelestialBodyAltitudePath("Moon", 400, true);
-    drawAstronomicalClock('#astronomicalClock', referenceDate, sunEphemeris, astronomyJS.getLocalMeanSiderealTime(), skyObjectPosition, 222);
+    ['#astronomicalClock', '#weatherAstronomicalClock'].forEach((selector) => {
+        if (document.querySelector(selector)) {
+            drawAstronomicalClock(selector, referenceDate, sunEphemeris, astronomyJS.getLocalMeanSiderealTime(), skyObjectPosition, 222);
+        }
+    });
 
     astronomySVG.setLocation(rioLocation.latitude, rioLocation.longitude);
     astronomySVG.setTimezone('America/Sao_Paulo');

@@ -5,6 +5,7 @@
 <script src="{{ ROOT_URL }}/assets/js/astronomy-js.min.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/graph-creator.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/data-handler.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/weather/rain-radar.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
 <style>
@@ -59,6 +60,181 @@
     #timeRange {
         width: 10rem;
     }
+
+    .dashboard-tabs {
+        align-items: flex-end;
+        border-bottom: 1px solid var(--pico-muted-border-color, #ddd);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-start;
+        margin-bottom: 1.5rem;
+        overflow: visible;
+    }
+
+    .dashboard-tabs button {
+        background: transparent;
+        border: 0;
+        border-bottom: 3px solid transparent;
+        border-radius: 0;
+        color: inherit;
+        flex: 0 0 auto;
+        margin: 0 0 -1px;
+        padding: 0.75rem 1rem;
+        width: auto;
+    }
+
+    .dashboard-tabs button[aria-selected="true"] {
+        border-bottom-color: var(--primary-color);
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+
+    .dashboard-weather-grid {
+        display: grid;
+        gap: var(--pico-grid-column-gap, 1rem);
+        grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+    }
+
+    .dashboard-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--pico-grid-row-gap, 1rem);
+    }
+
+    .dashboard-stack > article {
+        margin: 0;
+    }
+
+    .dashboard-weather-graphs {
+        display: grid;
+        gap: var(--pico-grid-column-gap, 1rem);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-weather-graphs > article {
+        margin: 0;
+    }
+
+    .dashboard-weather-table {
+        margin-top: 1.5rem;
+    }
+
+    .dashboard-side svg,
+    .dashboard-astronomy-grid svg {
+        height: auto;
+        max-width: 100%;
+    }
+
+    .dashboard-astronomy-grid {
+        display: grid;
+        gap: var(--pico-grid-column-gap, 1rem);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (max-width: 992px) {
+        .dashboard-weather-grid,
+        .dashboard-astronomy-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-weather-graphs {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .rain-radar-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .rain-radar-meta p {
+        margin: 0;
+    }
+
+    .rain-radar-panel-title {
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .rain-radar-static-map {
+        background: #a8d2dc;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+    }
+
+    .rain-radar-base-map {
+        display: block;
+        height: auto;
+        width: 100%;
+    }
+
+    .rain-radar-overlay {
+        height: var(--rain-radar-overlay-height);
+        left: var(--rain-radar-overlay-left);
+        max-width: none !important;
+        opacity: 0.72;
+        pointer-events: none;
+        position: absolute;
+        top: var(--rain-radar-overlay-top);
+        width: var(--rain-radar-overlay-width);
+        z-index: 2;
+    }
+
+    .rain-radar-distance-overlay {
+        height: 100%;
+        inset: 0;
+        overflow: visible;
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+        z-index: 3;
+    }
+
+    .rain-radar-distance-ring {
+        fill: none;
+        opacity: 0.35;
+        stroke: #6f8fa3;
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
+    }
+
+    .rain-radar-distance-label {
+        fill: #6f8fa3;
+        font-size: 1.2px;
+        opacity: 0.35;
+        paint-order: stroke;
+        stroke: rgba(255, 255, 255, 0.75);
+        stroke-width: 0.15px;
+        text-anchor: middle;
+    }
+
+    .rain-radar-location-marker {
+        background: #d00000;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45);
+        height: 14px;
+        left: var(--rain-radar-marker-left);
+        position: absolute;
+        top: var(--rain-radar-marker-top);
+        transform: translate(-50%, -50%);
+        width: 14px;
+        z-index: 4;
+    }
+
+    .rain-radar-status {
+        margin-top: 1rem;
+    }
+
+    .rain-radar-attribution {
+        font-size: 0.85rem;
+        margin: 0.75rem 0 0;
+    }
 </style>
 
 {% endblock %}
@@ -69,6 +245,35 @@
     const rioLocation = {"latitude": -22.8, "longitude": -43.3};
     let astronomySVG = AstronomySVG.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
     let astronomyJS = AstronomyJS.initialize(stockholmLocation.latitude, stockholmLocation.longitude);
+
+    function initializeDashboardTabs() {
+        const tabs = document.querySelectorAll("[data-dashboard-tab]");
+        const panels = document.querySelectorAll("[data-dashboard-tab-panel]");
+        const validTabNames = Array.from(tabs).map((tab) => tab.dataset.dashboardTab);
+
+        function activateTab(tabName) {
+            tabs.forEach((tab) => {
+                const isSelected = tab.dataset.dashboardTab === tabName;
+                tab.setAttribute("aria-selected", String(isSelected));
+                tab.tabIndex = isSelected ? 0 : -1;
+            });
+
+            panels.forEach((panel) => {
+                panel.hidden = panel.dataset.dashboardTabPanel !== tabName;
+            });
+        }
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const tabName = tab.dataset.dashboardTab;
+                activateTab(tabName);
+                history.replaceState(null, "", `#${tabName}`);
+            });
+        });
+
+        const initialTab = window.location.hash.slice(1);
+        activateTab(validTabNames.includes(initialTab) ? initialTab : "weather");
+    }
 
     function updateDashboard(selectedDate) {
         if (isNaN(selectedDate)) return;
@@ -126,6 +331,10 @@
 
     fetchDashboardData(astronomyJS);
     setInterval(() => fetchDashboardData(astronomyJS), 60_000 * 5);
+    initializeRainRadarStaticMaps();
+    fetchRainRadarData();
+    setInterval(fetchRainRadarData, 60_000 * 5);
+    initializeDashboardTabs();
 
     function parseWindDirection(metar) {
         const windRegex = /\b(\d{3}|VRB)(\d{2,3})(G\d{2,3})?KT\b/;
@@ -404,93 +613,168 @@
     <p>Weather and astronomy dashboard.</p>
 </hgroup>
 
-<div class="grid">
-    <div style="grid-column: span 2;">
-        <article>
-            <header>Current Weather</header>
-            <table id="solarSystemTable">
-                <tbody>
-                <tr id="outdoorsPressureRow">
-                    <td>Pressure</td>
-                    <td id="outdoorsPressureOutdated"></td>
-                    <td class="center-content" id="outdoorsPressure"></td>
-                    <td class="center-content" id="outdoorsPressureTrend"></td>
-                </tr>
-                <tr id="outdoorsRow">
-                    <td>Outdoors</td>
-                    <td id="outdoorsOutdated"></td>
-                    <td class="center-content" id="outdoorsTemperature"></td>
-                    <td class="center-content" id="outdoorsHumidity"></td>
-                </tr>
-                <tr id="balconyRow">
-                    <td>Balcony</td>
-                    <td id="balconyOutdated"></td>
-                    <td class="center-content" id="balconyTemperature"></td>
-                    <td class="center-content" id="balconyHumidity"></td>
-                </tr>
-                <tr id="officeRow">
-                    <td>Office</td>
-                    <td id="officeOutdated"></td>
-                    <td class="center-content" id="officeTemperature"></td>
-                    <td class="center-content" id="officeHumidity"></td>
-                </tr>
-                <tr id="bedroomRow">
-                    <td>Bedroom</td>
-                    <td id="bedroomOutdated"></td>
-                    <td class="center-content" id="bedroomTemperature"></td>
-                    <td class="center-content" id="bedroomHumidity"></td>
-                </tr>
-                <tr id="otherBedroomRow">
-                    <td>Other Bedroom</td>
-                    <td id="otherBedroomOutdated"></td>
-                    <td class="center-content" id="otherBedroomTemperature"></td>
-                    <td class="center-content" id="otherBedroomHumidity"></td>
-                </tr>
-                <tr>
-                    <td>Arlanda</td>
-                    <td class="center-content" colspan="3" id="ESSA"></td>
-                </tr>
-                <tr>
-                    <td>Bromma</td>
-                    <td class="center-content" colspan="3" id="ESSB"></td>
-                </tr>
-                </tbody>
-            </table>
-        </article>
+<div class="dashboard-tabs" role="tablist" aria-label="Dashboard sections">
+    <button id="weatherTab" type="button" role="tab" aria-controls="weatherPanel" aria-selected="true"
+            data-dashboard-tab="weather">Weather
+    </button>
+    <button id="rainRadarTab" type="button" role="tab" aria-controls="rainRadarPanel" aria-selected="false"
+            data-dashboard-tab="rain-radar">Rain Radar
+    </button>
+    <button id="astronomyTab" type="button" role="tab" aria-controls="astronomyPanel" aria-selected="false"
+            data-dashboard-tab="astronomy">Astronomy
+    </button>
+</div>
 
-        <article>
-            <header>Weather nearby</header>
-            <div style="overflow-x: auto;" id="netatmoTable"></div>
-        </article>
-
-        <div class="grid">
+<section id="weatherPanel" role="tabpanel" aria-labelledby="weatherTab" data-dashboard-tab-panel="weather">
+    <div class="dashboard-weather-grid">
+        <div class="dashboard-stack">
             <article>
-                <header>Atmospheric Pressure</header>
+                <header>Current Weather</header>
+                <table id="solarSystemTable">
+                    <tbody>
+                    <tr id="outdoorsPressureRow">
+                        <td>Pressure</td>
+                        <td id="outdoorsPressureOutdated"></td>
+                        <td class="center-content" id="outdoorsPressure"></td>
+                        <td class="center-content" id="outdoorsPressureTrend"></td>
+                    </tr>
+                    <tr id="outdoorsRow">
+                        <td>Outdoors</td>
+                        <td id="outdoorsOutdated"></td>
+                        <td class="center-content" id="outdoorsTemperature"></td>
+                        <td class="center-content" id="outdoorsHumidity"></td>
+                    </tr>
+                    <tr id="balconyRow">
+                        <td>Balcony</td>
+                        <td id="balconyOutdated"></td>
+                        <td class="center-content" id="balconyTemperature"></td>
+                        <td class="center-content" id="balconyHumidity"></td>
+                    </tr>
+                    <tr id="officeRow">
+                        <td>Office</td>
+                        <td id="officeOutdated"></td>
+                        <td class="center-content" id="officeTemperature"></td>
+                        <td class="center-content" id="officeHumidity"></td>
+                    </tr>
+                    <tr id="bedroomRow">
+                        <td>Bedroom</td>
+                        <td id="bedroomOutdated"></td>
+                        <td class="center-content" id="bedroomTemperature"></td>
+                        <td class="center-content" id="bedroomHumidity"></td>
+                    </tr>
+                    <tr id="otherBedroomRow">
+                        <td>Other Bedroom</td>
+                        <td id="otherBedroomOutdated"></td>
+                        <td class="center-content" id="otherBedroomTemperature"></td>
+                        <td class="center-content" id="otherBedroomHumidity"></td>
+                    </tr>
+                    <tr>
+                        <td>Arlanda</td>
+                        <td class="center-content" colspan="3" id="ESSA"></td>
+                    </tr>
+                    <tr>
+                        <td>Bromma</td>
+                        <td class="center-content" colspan="3" id="ESSB"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article>
+                <header>Weather nearby</header>
+                <div style="overflow-x: auto;" id="netatmoTable"></div>
+            </article>
+
+            <div class="dashboard-weather-graphs">
+                <article>
+                    <header>Cloud Coverage</header>
+                    <div class="center-content">
+                        <svg id="cloudCoverageGraph" width="400" height="200"></svg>
+                    </div>
+                </article>
+
+                <article>
+                    <header>Rain</header>
+                    <svg id="rainGraph" width="400" height="200"></svg>
+                </article>
+            </div>
+        </div>
+
+        <div class="dashboard-stack dashboard-side">
+            <article>
+                <header>Astronomical Clock</header>
+                <div class="center-content">
+                    <svg id="weatherAstronomicalClock" width="400" height="400"></svg>
+                </div>
+            </article>
+
+            <article>
+                <header>Pressure</header>
                 <div class="center-content">
                     <svg id="atmosphericPressureGauge" width="200" height="200"></svg>
                 </div>
             </article>
-            <article>
-                <header>Rain</header>
-                <svg id="rainGraph" width="400" height="200"></svg>
-            </article>
-        </div>
 
-        <div class="grid">
             <article>
                 <header>Wind</header>
                 <div class="center-content">
                     <svg id="windDirectionGauge" width="200" height="200"></svg>
                 </div>
             </article>
-            <article>
-                <header>Cloud Coverage</header>
-                <div class="center-content">
-                    <svg id="cloudCoverageGraph" width="400" height="200"></svg>
-                </div>
-            </article>
+        </div>
+    </div>
+
+    <article class="dashboard-weather-table">
+        <header>Weather</header>
+        <div id="hourlyWeatherTable"></div>
+    </article>
+
+    <p id="lastUpdated"></p>
+</section>
+
+<section id="rainRadarPanel" role="tabpanel" aria-labelledby="rainRadarTab" data-dashboard-tab-panel="rain-radar" hidden>
+    <article>
+        <header id="rainRadarHeading">Rain Radar</header>
+        <div class="rain-radar-meta">
+            <p id="rainRadarLastUpdated">Last updated: -</p>
+            <p id="rainRadarFrameTime">Image time: -</p>
+            <p id="rainRadarFrameCounter">Frame: -</p>
         </div>
         <div class="grid">
+            <div>
+                <div class="rain-radar-panel-title">Stockholms län</div>
+                <div class="rain-radar-static-map" data-rain-radar-map="stockholm">
+                    <img class="rain-radar-base-map"
+                         src="{{ ROOT_URL }}/assets/images/weather/rain-radar-stockholm-map.png"
+                         alt="Fixed map over Stockholms län">
+                    <img class="rain-radar-overlay" data-rain-radar-overlay="stockholm" alt="">
+                    <svg class="rain-radar-distance-overlay" data-rain-radar-distance-overlay="stockholm"
+                         aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+                </div>
+            </div>
+            <div>
+                <div class="rain-radar-panel-title">Scandinavia and Finland</div>
+                <div class="rain-radar-static-map" data-rain-radar-map="nordic">
+                    <img class="rain-radar-base-map"
+                         src="{{ ROOT_URL }}/assets/images/weather/rain-radar-nordic-map.png"
+                         alt="Fixed map over Scandinavia and Finland">
+                    <img class="rain-radar-overlay" data-rain-radar-overlay="nordic" alt="">
+                    <svg class="rain-radar-distance-overlay" data-rain-radar-distance-overlay="nordic"
+                         aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+                </div>
+            </div>
+        </div>
+        <p id="rainRadarStatus" class="rain-radar-status">Loading rain radar...</p>
+        <p class="rain-radar-attribution">
+            Maps: &copy; <a href="https://carto.com/">CARTO</a>,
+            &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.
+        </p>
+    </article>
+</section>
+
+<section id="astronomyPanel" role="tabpanel" aria-labelledby="astronomyTab" data-dashboard-tab-panel="astronomy" hidden>
+    <div class="dashboard-astronomy-grid">
+        <div class="dashboard-stack">
             <article>
                 <header>Astronomy</header>
                 <div class="grid" style="grid-template-columns: 1fr 1fr 1fr;">
@@ -504,70 +788,65 @@
                     <div id="drawPlanetSaturnVisibility"></div>
                 </div>
             </article>
-            <article>
-                <header>Sky</header>
-                <div class="center-content">
-                    <div id="drawPlanetsVisibility"></div>
-                </div>
-            </article>
-        </div>
-        <div class="grid">
+
             <article>
                 <header>Moon</header>
                 <div class="center-content">
                     <div id="drawMoonAltitudePathStockholm"></div>
                 </div>
             </article>
+
+            <article>
+                <header>Stockholm</header>
+                <div class="center-content" id="drawSunAltitudePathStockholm"></div>
+            </article>
+        </div>
+
+        <div class="dashboard-stack">
+            <article>
+                <header>Sky</header>
+                <div class="center-content">
+                    <div id="drawPlanetsVisibility"></div>
+                </div>
+            </article>
+
+            <article>
+                <header>Rio de Janeiro</header>
+                <div class="center-content" id="drawSunAltitudePathRio"></div>
+            </article>
+        </div>
+
+        <div class="dashboard-stack dashboard-side">
+            <article>
+                <header>Astronomical Clock</header>
+                <div class="center-content">
+                    <svg id="astronomicalClock" width="400" height="400"></svg>
+                </div>
+            </article>
+
+            <article>
+                <header>Date</header>
+                <div>
+                    <div role="group" style="display: flex; align-items: center; gap: 1rem;">
+                        <label for="datePicker" style="display: none;">Date</label>
+                        <input type="date" id="datePicker"/>
+                    </div>
+                </div>
+                <div>
+                    <div role="group" style="display: flex; align-items: center; gap: 1rem;">
+                        <label for="timeRange" style="display: none;">Time</label>
+                        <input type="range" id="timeRange" min="0" max="1440" value="0" step="1">
+                        <output id="timeLabel"></output>
+                        <button id="nowButton">Now</button>
+                    </div>
+                </div>
+            </article>
+
+            <article>
+                <header>Sun</header>
+                <div class="center-content" id="sunEphemerisTable"></div>
+            </article>
         </div>
     </div>
-    <div>
-
-        <article>
-            <header>Astronomical Clock</header>
-            <div class="center-content">
-                <svg id="astronomicalClock" width="400" height="400"></svg>
-            </div>
-        </article>
-
-        <article>
-            <header>Date</header>
-            <div>
-                <div role="group" style="display: flex; align-items: center; gap: 1rem;">
-                <label for="datePicker" style="display: none;">Date</label>
-                <input type="date" id="datePicker"/>
-                </div>
-            </div>
-            <div>
-                <div role="group" style="display: flex; align-items: center; gap: 1rem;">
-                    <label for="timeRange" style="display: none;">Time</label>
-                    <input type="range" id="timeRange" min="0" max="1440" value="0" step="1">
-                    <output id="timeLabel"></output>
-                    <button id="nowButton">Now</button>
-                </div>
-            </div>
-        </article>
-
-        <article>
-            <header>Stockholm</header>
-            <div class="center-content" id="drawSunAltitudePathStockholm"></div>
-        </article>
-
-        <article>
-            <header>Rio de Janeiro</header>
-            <div class="center-content" id="drawSunAltitudePathRio"></div>
-        </article>
-
-        <article>
-            <header>Sun</header>
-            <div class="center-content" id="sunEphemerisTable"></div>
-        </article>
-    </div>
-</div>
-
-<article>
-    <header>Weather</header>
-    <div id="hourlyWeatherTable"></div>
-</article>
-
-<p id="lastUpdated"></p>
+</section>
 {% endblock %}

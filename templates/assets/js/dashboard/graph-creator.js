@@ -158,6 +158,7 @@ function drawCloudCoverageGraph(svgSelector, dataDict) {
 function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
     const svg = d3.select(svgSelector);
     svg.selectAll("*").remove();
+    const markerId = `${svg.attr("id") || "wind-gauge"}-arrow`;
     const width = +svg.attr("width");
     const height = +svg.attr("height");
     const radius = Math.min(width, height) / 2 - 20;
@@ -196,7 +197,7 @@ function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
 
         svg.append("defs")
             .append("marker")
-            .attr("id", "arrow")
+            .attr("id", markerId)
             .attr("viewBox", "0 0 10 10")
             .attr("refX", 0)
             .attr("refY", 5)
@@ -220,7 +221,7 @@ function drawWindGauge(svgSelector, windDirection, windSpeedMps) {
             .attr("y2", y2)
             .attr("stroke", arrowColor)
             .attr("stroke-width", strokeWidth)
-            .attr("marker-end", "url(#arrow)")
+            .attr("marker-end", `url(#${markerId})`)
             .attr("stroke-linecap", "round");
     };
 
@@ -387,19 +388,6 @@ function drawAstronomicalClock(svgSelector, referenceTime, sunEphemeris, localMe
     const planetRadius = radius * 1.35;
     const eclipticRadius = radius * 1.5;
     const center = {x: width / 2, y: height / 2};
-
-    const defs = svg.append("defs")
-        .append("marker")
-        .attr("id", "arrow")
-        .attr("viewBox", "0 0 10 10")
-        .attr("refX", 0)
-        .attr("refY", 5)
-        .attr("markerWidth", 6)
-        .attr("markerHeight", 6)
-        .attr("orient", "auto")
-        .append("path")
-        .attr("d", "M 0 0 L 10 5 L 0 10 z")
-        .attr("fill", "red");
 
     // Draw compass background
     svg.append("circle")
