@@ -4,6 +4,8 @@
 <script src="{{ ROOT_URL }}/assets/js/astronomy-svg.min.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/astronomy-js.min.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/graph-creator.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/dashboard/environment-scene.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/dashboard/significant-weather.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/data-handler.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/weather/rain-radar.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -235,6 +237,170 @@
         font-size: 0.85rem;
         margin: 0.75rem 0 0;
     }
+
+    .significant-weather-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .significant-weather-meta p {
+        margin: 0;
+    }
+
+    .significant-weather-chart {
+        background: #f5f7fa;
+        border-radius: 8px;
+        overflow: auto;
+        padding: 1rem;
+    }
+
+    .significant-weather-chart img {
+        display: block;
+        height: auto;
+        margin: 0 auto;
+        max-width: 100%;
+    }
+
+    .significant-weather-status {
+        margin-top: 1rem;
+    }
+
+    .environment-scene-shell {
+        margin: 0;
+        overflow: hidden;
+    }
+
+    .environment-scene {
+        background: #111822;
+        border-radius: 8px;
+        min-height: min(72vh, 760px);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .environment-scene svg,
+    .environment-weather-canvas {
+        display: block;
+        inset: 0;
+        position: absolute;
+    }
+
+    .environment-scene svg {
+        height: 100%;
+        width: 100%;
+    }
+
+    .environment-weather-canvas {
+        height: 100%;
+        pointer-events: none;
+        width: 100%;
+        z-index: 6;
+    }
+
+    .environment-hud {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        left: 1rem;
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        z-index: 8;
+    }
+
+    .environment-hud span {
+        backdrop-filter: blur(10px);
+        background: rgba(10, 15, 25, 0.58);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 999px;
+        color: #f7fbff;
+        font-size: 0.82rem;
+        line-height: 1;
+        padding: 0.45rem 0.65rem;
+    }
+
+    .environment-tint,
+    .environment-lightning-flash {
+        inset: 0;
+        pointer-events: none;
+        position: absolute;
+    }
+
+    .environment-tint {
+        background: var(--environment-tint, rgba(8, 13, 33, 0));
+        mix-blend-mode: multiply;
+        opacity: var(--environment-tint-opacity, 0);
+        transition: background 1s ease, opacity 1s ease;
+        z-index: 4;
+    }
+
+    .environment-lightning-flash {
+        background: rgba(220, 238, 255, 0.86);
+        opacity: var(--environment-lightning-opacity, 0);
+        transition: opacity 120ms ease;
+        z-index: 7;
+    }
+
+    .environment-cloud {
+        animation: environment-cloud-drift var(--environment-cloud-duration, 80s) linear infinite;
+        opacity: var(--environment-cloud-opacity, 0.45);
+    }
+
+    .environment-cloud.cloud-2 {
+        animation-duration: calc(var(--environment-cloud-duration, 80s) * 1.25);
+        animation-delay: -26s;
+    }
+
+    .environment-cloud.cloud-3 {
+        animation-duration: calc(var(--environment-cloud-duration, 80s) * 0.8);
+        animation-delay: -48s;
+    }
+
+    .environment-window-light,
+    .environment-lamp-light {
+        opacity: var(--environment-light-opacity, 0);
+        transition: opacity 1s ease;
+    }
+
+    .environment-star {
+        opacity: var(--environment-star-opacity, 0);
+        transition: opacity 1s ease;
+    }
+
+    .environment-ground-wet {
+        opacity: var(--environment-wet-opacity, 0);
+        transition: opacity 1s ease;
+    }
+
+    .environment-snow-cover {
+        opacity: var(--environment-snow-opacity, 0);
+        transition: opacity 1s ease;
+    }
+
+    .environment-shadow {
+        opacity: var(--environment-shadow-opacity, 0.22);
+        transform: translate(var(--environment-shadow-x, 26px), var(--environment-shadow-y, 14px));
+        transition: opacity 1s ease, transform 1s ease;
+    }
+
+    @keyframes environment-cloud-drift {
+        from {
+            transform: translateX(-24%);
+        }
+
+        to {
+            transform: translateX(24%);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .environment-cloud {
+            animation: none;
+        }
+    }
 </style>
 
 {% endblock %}
@@ -281,6 +447,9 @@
         const sunEphemeris = getSunEphemeris(astronomyJS);
         drawSunEphemerisTable('sunEphemerisTable', astronomyJS, selectedDate);
         updateAllTilesWithTime(sunEphemeris, selectedDate);
+        if (typeof updateEnvironmentSceneTime === "function") {
+            updateEnvironmentSceneTime(selectedDate, astronomyJS);
+        }
     }
 
     const datePicker = document.getElementById('datePicker');
@@ -320,6 +489,10 @@
     });
 
     updateTimeToNow();
+    if (typeof initializeEnvironmentScene === "function") {
+        initializeEnvironmentScene("environmentScene", astronomyJS);
+        updateEnvironmentSceneTime(getReferenceDateFromForm(), astronomyJS);
+    }
 
     function getReferenceDateFromForm() {
         const [year, month, day] = datePicker.value.split("-").map(Number);
@@ -334,6 +507,7 @@
     initializeRainRadarStaticMaps();
     fetchRainRadarData();
     setInterval(fetchRainRadarData, 60_000 * 5);
+    initializeSignificantWeather();
     initializeDashboardTabs();
 
     function parseWindDirection(metar) {
@@ -620,8 +794,14 @@
     <button id="rainRadarTab" type="button" role="tab" aria-controls="rainRadarPanel" aria-selected="false"
             data-dashboard-tab="rain-radar">Rain Radar
     </button>
+    <button id="significantWeatherTab" type="button" role="tab" aria-controls="significantWeatherPanel"
+            aria-selected="false" data-dashboard-tab="significant-weather">Significant Weather
+    </button>
     <button id="astronomyTab" type="button" role="tab" aria-controls="astronomyPanel" aria-selected="false"
             data-dashboard-tab="astronomy">Astronomy
+    </button>
+    <button id="environmentTab" type="button" role="tab" aria-controls="environmentPanel" aria-selected="false"
+            data-dashboard-tab="environment">Environment
     </button>
 </div>
 
@@ -769,6 +949,37 @@
             Maps: &copy; <a href="https://carto.com/">CARTO</a>,
             &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors.
         </p>
+    </article>
+</section>
+
+<section id="significantWeatherPanel" role="tabpanel" aria-labelledby="significantWeatherTab"
+         data-dashboard-tab-panel="significant-weather" hidden>
+    <article>
+        <header>Significant Weather</header>
+        <div class="significant-weather-meta">
+            <p id="significantWeatherLastUpdated">Last updated: -</p>
+            <p id="significantWeatherSourceModified">Source image: -</p>
+            <p id="significantWeatherContentLength">Size: -</p>
+            <p><a id="significantWeatherSource" href="#" hidden>Source</a></p>
+        </div>
+        <div class="significant-weather-chart">
+            <img id="significantWeatherImage" alt="Significant weather chart for the Nordic region">
+        </div>
+        <p id="significantWeatherStatus" class="significant-weather-status">Loading significant weather chart...</p>
+    </article>
+</section>
+
+<section id="environmentPanel" role="tabpanel" aria-labelledby="environmentTab" data-dashboard-tab-panel="environment" hidden>
+    <article class="environment-scene-shell">
+        <div id="environmentScene" class="environment-scene" aria-label="Animated courtyard environment">
+            <div class="environment-hud" aria-live="polite">
+                <span id="environmentTimeLabel">--:--</span>
+                <span id="environmentConditionLabel">Live environment</span>
+                <span id="environmentTemperatureLabel">-- C</span>
+            </div>
+            <div class="environment-tint"></div>
+            <div class="environment-lightning-flash"></div>
+        </div>
     </article>
 </section>
 

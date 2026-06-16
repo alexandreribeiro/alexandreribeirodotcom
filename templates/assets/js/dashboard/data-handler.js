@@ -105,6 +105,9 @@ function fetchDashboardData(astronomyJS) {
             drawNetatmoTable('netatmoTable', data['netatmo']);
             drawHourlyWeatherTable('hourlyWeatherTable', data['weather']['hourly']);
             drawCloudCoverageGraph('#cloudCoverageGraph', data['weather']['hourly']);
+            if (typeof updateEnvironmentSceneFromDashboardData === "function") {
+                updateEnvironmentSceneFromDashboardData(data, astronomyJS);
+            }
         })
         .catch(error => {
             console.error("Error fetching Gist:", error);
