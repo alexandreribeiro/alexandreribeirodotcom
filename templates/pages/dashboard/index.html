@@ -6,6 +6,7 @@
 <script src="{{ ROOT_URL }}/assets/js/dashboard/graph-creator.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/environment-scene.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/significant-weather.js"></script>
+<script src="{{ ROOT_URL }}/assets/js/dashboard/surface-pressure.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/dashboard/data-handler.js"></script>
 <script src="{{ ROOT_URL }}/assets/js/weather/rain-radar.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -267,6 +268,62 @@
         margin-top: 1rem;
     }
 
+    .surface-pressure-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .surface-pressure-meta p,
+    .surface-pressure-controls p {
+        margin: 0;
+    }
+
+    .surface-pressure-controls,
+    .dashboard-date-controls {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-date-controls {
+        margin-bottom: 0;
+    }
+
+    .surface-pressure-valid-time {
+        flex: 1 1 24rem;
+        line-height: 1.2;
+    }
+
+    .icon-button {
+        align-items: center;
+        display: inline-flex;
+        flex: 0 0 2.5rem;
+        height: 2.5rem;
+        justify-content: center;
+        padding: 0;
+        width: 2.5rem;
+    }
+
+    .surface-pressure-chart {
+        overflow: auto;
+    }
+
+    .surface-pressure-chart img {
+        display: block;
+        height: auto;
+        margin: 0 auto;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .surface-pressure-status {
+        margin-top: 1rem;
+    }
+
     .environment-scene-shell {
         margin: 0;
         overflow: hidden;
@@ -401,6 +458,7 @@
             animation: none;
         }
     }
+
 </style>
 
 {% endblock %}
@@ -456,6 +514,15 @@
     const timeRange = document.getElementById("timeRange");
     const timeLabel = document.getElementById("timeLabel");
     const nowButton = document.getElementById("nowButton");
+    const previousDateButton = document.getElementById("previousDateButton");
+    const nextDateButton = document.getElementById("nextDateButton");
+
+    function formatDateInputValue(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    }
 
     function minutesToHHMM(minutes) {
         const hour = Math.floor(minutes / 60);
@@ -469,19 +536,36 @@
 
     function updateTimeToNow() {
         const now = new Date();
-        datePicker.value = now.toISOString().slice(0, 10);
+        datePicker.value = formatDateInputValue(now);
         const nowMinutes = getMinutesSinceMidnight(now);
         timeRange.value = nowMinutes;
         timeLabel.textContent = minutesToHHMM(nowMinutes);
         updateDashboard(now);
     }
 
+    function shiftReferenceDate(dayDelta) {
+        const referenceDate = getReferenceDateFromForm();
+        if (isNaN(referenceDate)) return;
+
+        referenceDate.setDate(referenceDate.getDate() + dayDelta);
+        datePicker.value = formatDateInputValue(referenceDate);
+        updateDashboard(referenceDate);
+    }
+
     nowButton.addEventListener("click", (event) => {
         event.preventDefault();
         updateTimeToNow();
     });
+    previousDateButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        shiftReferenceDate(-1);
+    });
+    nextDateButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        shiftReferenceDate(1);
+    });
     timeRange.addEventListener("input", () => {
-        timeLabel.value = minutesToHHMM(parseInt(timeRange.value, 10));
+        timeLabel.textContent = minutesToHHMM(parseInt(timeRange.value, 10));
         updateDashboard(getReferenceDateFromForm());
     });
     datePicker.addEventListener("input", () => {
@@ -507,6 +591,7 @@
     initializeRainRadarStaticMaps();
     fetchRainRadarData();
     setInterval(fetchRainRadarData, 60_000 * 5);
+    initializeSurfacePressure();
     initializeSignificantWeather();
     initializeDashboardTabs();
 
@@ -794,6 +879,9 @@
     <button id="rainRadarTab" type="button" role="tab" aria-controls="rainRadarPanel" aria-selected="false"
             data-dashboard-tab="rain-radar">Rain Radar
     </button>
+    <button id="surfacePressureTab" type="button" role="tab" aria-controls="surfacePressurePanel"
+            aria-selected="false" data-dashboard-tab="surface-pressure">Surface Pressure
+    </button>
     <button id="significantWeatherTab" type="button" role="tab" aria-controls="significantWeatherPanel"
             aria-selected="false" data-dashboard-tab="significant-weather">Significant Weather
     </button>
@@ -952,6 +1040,36 @@
     </article>
 </section>
 
+<section id="surfacePressurePanel" role="tabpanel" aria-labelledby="surfacePressureTab"
+         data-dashboard-tab-panel="surface-pressure" hidden>
+    <article>
+        <header>Surface Pressure</header>
+        <div class="surface-pressure-controls" role="group" aria-label="Surface pressure chart date">
+            <button id="surfacePressurePreviousButton" class="icon-button" type="button" aria-label="Previous chart"
+                    title="Previous chart">
+                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <p id="surfacePressureChartTime" class="surface-pressure-valid-time">Valid time: -</p>
+            <button id="surfacePressureNextButton" class="icon-button" type="button" aria-label="Next chart"
+                    title="Next chart">
+                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
+            <p id="surfacePressureRelativeTime">Valid: -</p>
+            <p id="surfacePressureFrameCounter">Chart: -</p>
+        </div>
+        <div class="surface-pressure-chart">
+            <img id="surfacePressureImage" alt="Surface pressure chart">
+        </div>
+        <div class="surface-pressure-meta">
+            <p id="surfacePressureSourceIssued">Source issued: -</p>
+            <p id="surfacePressureRun">Run: -</p>
+            <p id="surfacePressureLastUpdated">Last updated: -</p>
+            <p><a id="surfacePressureSource" href="#" hidden>Source</a></p>
+        </div>
+        <p id="surfacePressureStatus" class="surface-pressure-status">Loading surface pressure charts...</p>
+    </article>
+</section>
+
 <section id="significantWeatherPanel" role="tabpanel" aria-labelledby="significantWeatherTab"
          data-dashboard-tab-panel="significant-weather" hidden>
     <article>
@@ -1038,9 +1156,17 @@
             <article>
                 <header>Date</header>
                 <div>
-                    <div role="group" style="display: flex; align-items: center; gap: 1rem;">
+                    <div class="dashboard-date-controls" role="group" aria-label="Date">
+                        <button id="previousDateButton" class="icon-button" type="button" aria-label="Previous day"
+                                title="Previous day">
+                            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                        </button>
                         <label for="datePicker" style="display: none;">Date</label>
                         <input type="date" id="datePicker"/>
+                        <button id="nextDateButton" class="icon-button" type="button" aria-label="Next day"
+                                title="Next day">
+                            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
                 <div>
